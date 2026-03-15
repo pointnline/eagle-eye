@@ -515,6 +515,9 @@
         .tab-btn[data-tab="correlation"].active { color: var(--blue);  background: var(--blue-dim);  border-color: rgba(52,152,219,0.3); }
         .tab-btn[data-tab="risk"].active    { color: var(--red);    background: var(--red-dim);    border-color: rgba(231,76,60,0.3); }
         .tab-btn[data-tab="scenario"].active { color: var(--purple); background: var(--purple-dim); border-color: rgba(139,92,246,0.3); }
+        .tab-btn[data-tab="smartmoney"].active { color: var(--green); background: var(--green-dim); border-color: rgba(67,233,123,0.3); }
+        .tab-btn[data-tab="hidden"].active { color: var(--cyan); background: var(--cyan-dim); border-color: rgba(78,205,196,0.3); }
+        .tab-btn[data-tab="action"].active { color: var(--yellow); background: var(--yellow-dim); border-color: rgba(241,196,15,0.3); }
 
         .tab-badge {
             width: 6px;
@@ -965,6 +968,9 @@
         <button class="tab-btn" data-tab="scenario" onclick="switchTab('scenario')">
             🎯 시나리오
         </button>
+        <button class="tab-btn" data-tab="smartmoney" onclick="switchTab('smartmoney')">🧠 스마트머니</button>
+        <button class="tab-btn" data-tab="hidden" onclick="switchTab('hidden')">🔍 히든패턴</button>
+        <button class="tab-btn" data-tab="action" onclick="switchTab('action')">⚡ 액션시그널</button>
     </nav>
 
     <!-- Tab: Signal Chain (gold) -->
@@ -1052,6 +1058,60 @@
         <div class="card">
             <h4>🔑 핵심 변수</h4>
             <div id="key-variables"></div>
+        </div>
+    </div>
+
+    <!-- Tab: Smart Money (green) -->
+    <div class="tab-content" id="tab-smartmoney">
+        <div class="card card-full">
+            <h4>🧠 채널별 콜 기록</h4>
+            <div id="smartmoney-calls-list">
+                <div class="loading-state"><div class="loading-spinner"></div><p>스마트머니 분석 대기 중...</p></div>
+            </div>
+        </div>
+        <div class="card">
+            <h4>📊 채널 적중률</h4>
+            <canvas id="chart-smartmoney-hitrate" height="200"></canvas>
+        </div>
+        <div class="card">
+            <h4>🏆 상위 퍼포머</h4>
+            <div id="smartmoney-top-performers"></div>
+        </div>
+    </div>
+
+    <!-- Tab: Hidden Pattern (cyan) -->
+    <div class="tab-content" id="tab-hidden">
+        <div class="card card-full">
+            <h4>🔍 히든 패턴 5선</h4>
+            <div id="hidden-patterns-list">
+                <div class="loading-state"><div class="loading-spinner"></div><p>패턴 분석 대기 중...</p></div>
+            </div>
+        </div>
+        <div class="card">
+            <h4>📈 볼륨 vs 변동성</h4>
+            <div id="hidden-volume-insight" style="padding:20px;font-size:15px;line-height:1.8;color:var(--cyan);">-</div>
+        </div>
+        <div class="card">
+            <h4>📡 정보 확산 패턴</h4>
+            <div id="hidden-spread-insight" style="padding:20px;font-size:15px;line-height:1.8;color:var(--cyan);">-</div>
+        </div>
+    </div>
+
+    <!-- Tab: Action Signal (yellow) -->
+    <div class="tab-content" id="tab-action">
+        <div class="card card-full">
+            <h4>⚡ 우선순위 액션 시그널</h4>
+            <div id="action-signals-list">
+                <div class="loading-state"><div class="loading-spinner"></div><p>액션 시그널 생성 중...</p></div>
+            </div>
+        </div>
+        <div class="card card-full">
+            <h4>✅ 다음 주 모니터링 체크리스트</h4>
+            <div id="action-checklist"></div>
+        </div>
+        <div class="card card-full">
+            <h4 style="color:var(--gold);font-family:'Playfair Display',serif;">⭐ TOP 3 핵심 인사이트</h4>
+            <div id="action-top3-insights"></div>
         </div>
     </div>
 
@@ -1428,9 +1488,190 @@ function renderScenario(data) {
     }
 }
 
+// === 스마트머니 렌더링 ===
+function renderSmartMoney(data) {
+    const callsList = document.getElementById('smartmoney-calls-list');
+    const topEl = document.getElementById('smartmoney-top-performers');
+
+    if (!data || !data.channels || data.channels.length === 0) {
+        callsList.innerHTML = '<div class="no-data">스마트머니 데이터 없음</div>';
+        return;
+    }
+
+    callsList.innerHTML = data.channels.map(ch => {
+        const hitPct = Math.round((ch.hit_rate || 0) * 100);
+        const hitColor = hitPct >= 60 ? 'var(--green)' : hitPct >= 40 ? 'var(--orange)' : 'var(--red)';
+        const callsHtml = (ch.calls || []).map(c => {
+            const badge = c.result === 'win'
+                ? `<span style="background:var(--green-dim);color:var(--green);padding:2px 8px;border-radius:var(--radius-full);font-size:12px;font-family:'JetBrains Mono',monospace;">WIN</span>`
+                : c.result === 'loss'
+                ? `<span style="background:var(--red-dim);color:var(--red);padding:2px 8px;border-radius:var(--radius-full);font-size:12px;font-family:'JetBrains Mono',monospace;">LOSS</span>`
+                : `<span style="background:var(--gold-dim);color:var(--gold);padding:2px 8px;border-radius:var(--radius-full);font-size:12px;font-family:'JetBrains Mono',monospace;">PENDING</span>`;
+            const dirIcon = c.direction === 'long' ? '📈' : '📉';
+            const retStr = c.return_pct != null ? `<span style="font-family:'JetBrains Mono',monospace;font-size:12px;color:${c.return_pct >= 0 ? 'var(--green)' : 'var(--red)'};">${c.return_pct >= 0 ? '+' : ''}${c.return_pct}%</span>` : '';
+            return `<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);">
+                ${badge} ${dirIcon}
+                <span style="flex:1;font-size:14px;">${escapeHtml(c.asset || '')} — ${escapeHtml(c.message || '')}</span>
+                ${retStr}
+                <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-secondary);">${escapeHtml(c.date || '')}</span>
+            </div>`;
+        }).join('');
+        return `<div style="padding:16px;background:var(--bg-elevated);border:1px solid var(--border);border-radius:var(--radius-md);margin-bottom:12px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+                <strong style="font-size:15px;">📡 ${escapeHtml(ch.name)}</strong>
+                <div style="display:flex;gap:16px;align-items:center;">
+                    <span style="font-family:'JetBrains Mono',monospace;font-size:13px;color:${hitColor};">적중률 ${hitPct}%</span>
+                    <span style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--text-secondary);">${ch.total_calls || 0}콜 / 평균 ${(ch.avg_return || 0).toFixed(1)}%</span>
+                </div>
+            </div>
+            ${callsHtml || '<div style="color:var(--text-secondary);font-size:13px;">콜 기록 없음</div>'}
+        </div>`;
+    }).join('');
+
+    // 적중률 바 차트
+    const ctx = document.getElementById('chart-smartmoney-hitrate');
+    if (ctx && data.channels.length > 0) {
+        const clr = getChartColors();
+        if (charts['smartmoneyHitrate']) charts['smartmoneyHitrate'].destroy();
+        charts['smartmoneyHitrate'] = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: data.channels.map(ch => ch.name),
+                datasets: [{
+                    label: '적중률 (%)',
+                    data: data.channels.map(ch => Math.round((ch.hit_rate || 0) * 100)),
+                    backgroundColor: data.channels.map(ch => {
+                        const p = (ch.hit_rate || 0) * 100;
+                        return p >= 60 ? 'rgba(67,233,123,0.6)' : p >= 40 ? 'rgba(243,156,18,0.6)' : 'rgba(231,76,60,0.6)';
+                    }),
+                    borderRadius: 4,
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { ticks: { color: clr.text, font: { size: 11, family: 'JetBrains Mono' } }, grid: { color: clr.grid } },
+                    y: { ticks: { color: clr.text, font: { size: 11, family: 'JetBrains Mono' } }, grid: { color: clr.grid }, max: 100 },
+                }
+            }
+        });
+    }
+
+    if (topEl && data.top_performers) {
+        topEl.innerHTML = data.top_performers.map((ch, i) =>
+            `<div style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--green-dim);border:1px solid rgba(67,233,123,0.2);border-radius:var(--radius-sm);margin-bottom:6px;">
+                <span style="font-family:'JetBrains Mono',monospace;font-size:18px;color:var(--green);font-weight:700;">#${i + 1}</span>
+                <span style="font-size:15px;">${escapeHtml(ch)}</span>
+            </div>`
+        ).join('');
+    }
+
+    if (data.summary) {
+        const sumEl = document.createElement('div');
+        sumEl.style.cssText = 'padding:14px;background:var(--green-dim);border-left:3px solid var(--green);border-radius:var(--radius-sm);margin-top:12px;font-size:14px;line-height:1.7;';
+        sumEl.textContent = data.summary;
+        callsList.appendChild(sumEl);
+    }
+}
+
+// === 히든패턴 렌더링 ===
+function renderHiddenPattern(data) {
+    const patternsList = document.getElementById('hidden-patterns-list');
+    const volEl = document.getElementById('hidden-volume-insight');
+    const spreadEl = document.getElementById('hidden-spread-insight');
+
+    if (!data || !data.patterns || data.patterns.length === 0) {
+        patternsList.innerHTML = '<div class="no-data">히든패턴 데이터 없음</div>';
+        return;
+    }
+
+    const catColor = { volume: 'var(--blue)', timing: 'var(--orange)', sentiment: 'var(--purple)', divergence: 'var(--red)', structural: 'var(--cyan)' };
+
+    patternsList.innerHTML = data.patterns.map(p => {
+        const sig = Math.round((p.significance || 0) * 100);
+        const color = catColor[p.category] || 'var(--cyan)';
+        return `<div style="padding:16px;background:var(--bg-elevated);border:1px solid var(--border);border-radius:var(--radius-md);margin-bottom:12px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+                <div style="display:flex;align-items:center;gap:10px;">
+                    <span style="font-family:'JetBrains Mono',monospace;font-size:20px;color:var(--cyan);font-weight:700;">${p.id || ''}</span>
+                    <strong style="font-size:15px;">${escapeHtml(p.title || '')}</strong>
+                    <span style="font-size:11px;padding:2px 8px;background:rgba(78,205,196,0.1);color:${color};border-radius:var(--radius-full);font-family:'JetBrains Mono',monospace;">${escapeHtml(p.category || '')}</span>
+                </div>
+                <span style="font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--cyan);">유의도 ${sig}%</span>
+            </div>
+            <p style="font-size:14px;line-height:1.7;color:var(--text-primary);margin-bottom:8px;">${escapeHtml(p.description || '')}</p>
+            <div style="height:6px;background:var(--border);border-radius:var(--radius-full);overflow:hidden;">
+                <div style="height:100%;width:${sig}%;background:${color};border-radius:var(--radius-full);transition:width 0.8s var(--ease-default);"></div>
+            </div>
+            ${p.evidence ? `<div style="margin-top:8px;font-size:12px;color:var(--text-secondary);font-family:'JetBrains Mono',monospace;">근거: ${escapeHtml(p.evidence)}</div>` : ''}
+        </div>`;
+    }).join('');
+
+    if (data.volume_vs_volatility && data.volume_vs_volatility.insight) {
+        volEl.textContent = data.volume_vs_volatility.insight;
+    }
+    if (data.information_spread && data.information_spread.insight) {
+        spreadEl.textContent = data.information_spread.insight;
+    }
+}
+
+// === 액션시그널 렌더링 ===
+function renderActionSignal(data) {
+    const signalsList = document.getElementById('action-signals-list');
+    const checklistEl = document.getElementById('action-checklist');
+    const top3El = document.getElementById('action-top3-insights');
+
+    if (!data || !data.actions || data.actions.length === 0) {
+        signalsList.innerHTML = '<div class="no-data">액션 시그널 데이터 없음</div>';
+        return;
+    }
+
+    const dirIcon = { buy: '📈', sell: '📉', watch: '👁', hedge: '🛡' };
+    const dirColor = { buy: 'var(--green)', sell: 'var(--red)', watch: 'var(--blue)', hedge: 'var(--orange)' };
+
+    signalsList.innerHTML = data.actions.map(a => {
+        const conf = Math.round((a.confidence || 0) * 100);
+        const icon = dirIcon[a.direction] || '⚡';
+        const color = dirColor[a.direction] || 'var(--gold)';
+        const priBg = a.priority === 1 ? 'var(--red)' : a.priority === 2 ? 'var(--orange)' : 'var(--text-secondary)';
+        return `<div style="padding:16px;background:var(--bg-elevated);border:1px solid var(--border);border-radius:var(--radius-md);margin-bottom:10px;border-left:3px solid ${color};">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+                <span style="background:${priBg};color:#fff;font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;padding:2px 8px;border-radius:var(--radius-full);">P${a.priority}</span>
+                <span style="font-size:16px;">${icon}</span>
+                <strong style="font-size:15px;flex:1;">${escapeHtml(a.action || '')}</strong>
+                <span style="font-family:'JetBrains Mono',monospace;font-size:12px;color:${color};">${escapeHtml(a.asset || '')}</span>
+                <span style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--text-secondary);">신뢰도 ${conf}%</span>
+            </div>
+            ${a.reasoning ? `<p style="font-size:14px;line-height:1.7;color:var(--text-secondary);">${escapeHtml(a.reasoning)}</p>` : ''}
+            ${a.timeframe ? `<div style="margin-top:6px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-tertiary);">⏱️ ${escapeHtml(a.timeframe)}</div>` : ''}
+        </div>`;
+    }).join('');
+
+    if (checklistEl && data.monitoring_checklist) {
+        checklistEl.innerHTML = data.monitoring_checklist.map(item =>
+            `<div style="display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);">
+                <span style="color:var(--yellow);font-size:15px;margin-top:1px;">☐</span>
+                <span style="font-size:14px;line-height:1.7;">${escapeHtml(item)}</span>
+            </div>`
+        ).join('');
+    }
+
+    if (top3El && data.top_3_insights) {
+        top3El.innerHTML = data.top_3_insights.map((ins, i) =>
+            `<div style="padding:18px 20px;background:var(--gold-dim);border:1px solid var(--border-gold);border-radius:var(--radius-md);margin-bottom:10px;">
+                <div style="display:flex;align-items:flex-start;gap:14px;">
+                    <span style="font-family:'JetBrains Mono',monospace;font-size:28px;font-weight:700;color:var(--gold);line-height:1;">${i + 1}</span>
+                    <p style="font-size:16px;line-height:1.8;color:var(--gold-light);font-weight:500;">${escapeHtml(ins)}</p>
+                </div>
+            </div>`
+        ).join('');
+    }
+}
+
 // === 메인 데이터 로드 ===
 async function loadAllData() {
-    const [meta, raw, signal, narrative, correlation, risk, scenario] = await Promise.all([
+    const [meta, raw, signal, narrative, correlation, risk, scenario, smartmoney, hiddenPattern, actionSignal] = await Promise.all([
         loadJSON('meta.json'),
         loadJSON('raw_messages.json'),
         loadJSON('signal_chain.json'),
@@ -1438,6 +1679,9 @@ async function loadAllData() {
         loadJSON('correlation.json'),
         loadJSON('risk_radar.json'),
         loadJSON('scenario.json'),
+        loadJSON('smart_money.json'),
+        loadJSON('hidden_pattern.json'),
+        loadJSON('action_signal.json'),
     ]);
 
     if (meta) {
@@ -1456,6 +1700,9 @@ async function loadAllData() {
     if (correlation && correlation.data) renderCorrelation(correlation.data);
     if (risk && risk.data) renderRisk(risk.data);
     if (scenario && scenario.data) renderScenario(scenario.data);
+    if (smartmoney && smartmoney.data) renderSmartMoney(smartmoney.data);
+    if (hiddenPattern && hiddenPattern.data) renderHiddenPattern(hiddenPattern.data);
+    if (actionSignal && actionSignal.data) renderActionSignal(actionSignal.data);
 }
 
 // === 초기화 및 자동 갱신 ===

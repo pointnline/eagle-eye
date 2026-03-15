@@ -125,6 +125,9 @@ ANALYSIS_TYPES = [
     "correlation",       # 상관관계
     "risk_radar",        # 리스크 레이더
     "scenario",          # 시나리오
+    "smart_money",       # 스마트머니 추적
+    "hidden_pattern",    # 히든패턴 분석
+    "action_signal",     # 액션 시그널
 ]
 
 # === 대시보드 설정 ===

@@ -140,6 +140,75 @@ PROMPTS = {
 
 메시지 데이터:
 {messages}""",
+
+    "smart_money": """당신은 스마트머니 추적 전문가입니다.
+아래 텔레그램 채널 메시지들을 분석하여 어떤 채널이 정확한 시장 예측을 했는지 추적하세요.
+
+출력 형식 (JSON):
+{
+  "channels": [
+    {
+      "name": "채널명",
+      "category": "crypto|stocks|macro",
+      "calls": [
+        {"message": "메시지 요약", "date": "날짜", "asset": "자산", "direction": "long|short", "result": "win|loss|pending", "return_pct": 0.0}
+      ],
+      "hit_rate": 0.0,
+      "total_calls": 0,
+      "avg_return": 0.0
+    }
+  ],
+  "top_performers": ["상위 채널들"],
+  "summary": "스마트머니 전체 요약"
+}
+
+메시지 데이터:
+{messages}""",
+
+    "hidden_pattern": """당신은 데이터 패턴 분석 전문가입니다.
+아래 텔레그램 채널 메시지들에서 명확하지 않은 **히든 패턴** 5개를 찾아내세요.
+
+출력 형식 (JSON):
+{
+  "patterns": [
+    {
+      "id": 1,
+      "title": "패턴 제목",
+      "description": "패턴 설명 (3-5문장)",
+      "evidence": "근거 데이터",
+      "significance": 0.0,
+      "category": "volume|timing|sentiment|divergence|structural"
+    }
+  ],
+  "volume_vs_volatility": {"insight": "볼륨과 변동성 관계 인사이트"},
+  "information_spread": {"insight": "채널간 정보 확산 패턴"}
+}
+
+메시지 데이터:
+{messages}""",
+
+    "action_signal": """당신은 투자 액션 시그널 전문가입니다.
+아래 텔레그램 채널 메시지들을 종합하여 실행 가능한 트레이딩/모니터링 시그널을 생성하세요.
+
+출력 형식 (JSON):
+{
+  "actions": [
+    {
+      "priority": 1,
+      "action": "액션 설명",
+      "asset": "관련 자산",
+      "direction": "buy|sell|watch|hedge",
+      "confidence": 0.0,
+      "timeframe": "기간",
+      "reasoning": "근거"
+    }
+  ],
+  "monitoring_checklist": ["다음 주 핵심 모니터링 포인트들"],
+  "top_3_insights": ["가장 중요한 인사이트 3줄"]
+}
+
+메시지 데이터:
+{messages}""",
 }
 
 
@@ -216,11 +285,11 @@ def run_all_analyses() -> dict:
         "total_messages": data["total_messages"],
     }
 
-    # 5개 분석 순차 실행
+    # 8개 분석 순차 실행
     for atype in PROMPTS:
         print(f"\n🔍 분석 중: {atype}...")
-        # 시나리오는 Deep 모델 사용
-        use_deep = (atype == "scenario")
+        # 시나리오, 액션시그널은 Deep 모델 사용
+        use_deep = (atype in ("scenario", "action_signal"))
         result = analyze(atype, messages_text, use_deep=use_deep)
         results[atype] = result
         print(f"  ✅ {atype} 완료")
