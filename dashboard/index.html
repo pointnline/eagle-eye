@@ -4,153 +4,372 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>🦅 EagleEye v2.0 — Live Intelligence Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Noto+Sans+KR:wght@300;400;500;700&family=Cormorant+Garamond:ital,wght@1,400;1,600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js" crossorigin="anonymous"></script>
     <style>
+        /* ============================================================
+           RainbowMoon Design System — EagleEye v2.0
+        ============================================================ */
         :root {
-            --bg-primary: #0a0e1a;
-            --bg-secondary: #111827;
-            --bg-card: #1a2035;
-            --bg-card-hover: #1e2a45;
-            --text-primary: #e2e8f0;
-            --text-secondary: #94a3b8;
-            --text-muted: #64748b;
-            --accent: #3b82f6;
-            --accent-glow: rgba(59, 130, 246, 0.3);
-            --border: #1e293b;
-            --success: #10b981;
-            --warning: #f59e0b;
-            --danger: #ef4444;
+            /* Background */
+            --bg-primary: #06060b;
+            --bg-secondary: #0a0a12;
+            --bg-tertiary: #0e0e18;
+            --bg-elevated: rgba(255,255,255,0.025);
+            --bg-hover: rgba(255,255,255,0.04);
+
+            /* Gold (Primary Accent) */
+            --gold: #c9a84c;
+            --gold-light: #e8d5a3;
+            --gold-dim: rgba(201,168,76,0.15);
+            --gold-glow: rgba(201,168,76,0.3);
+            --gold-subtle: rgba(201,168,76,0.08);
+
+            /* Rainbow Semantic */
+            --red: #e74c3c;
+            --red-dim: rgba(231,76,60,0.1);
+            --orange: #f39c12;
+            --orange-dim: rgba(243,156,18,0.1);
+            --yellow: #f1c40f;
+            --yellow-dim: rgba(241,196,15,0.1);
+            --green: #43e97b;
+            --green-dim: rgba(67,233,123,0.1);
+            --blue: #3498db;
+            --blue-dim: rgba(52,152,219,0.1);
+            --indigo: #4a69bd;
+            --indigo-dim: rgba(74,105,189,0.1);
             --purple: #8b5cf6;
-            --live-red: #ef4444;
-            --feed-bg: #0f172a;
+            --purple-dim: rgba(139,92,246,0.1);
+            --cyan: #4ecdc4;
+            --cyan-dim: rgba(78,205,196,0.1);
+
+            /* Text */
+            --text-primary: #d0d0d0;
+            --text-secondary: #888888;
+            --text-tertiary: #555555;
+            --text-inverse: #06060b;
+
+            /* Border */
+            --border: rgba(255,255,255,0.06);
+            --border-hover: rgba(255,255,255,0.12);
+            --border-gold: rgba(201,168,76,0.2);
+
+            /* Glassmorphism */
+            --glass-bg: rgba(255,255,255,0.03);
+            --glass-blur: 20px;
+            --glass-border: rgba(255,255,255,0.06);
+
+            /* Spacing */
+            --space-xs: 4px;
+            --space-sm: 8px;
+            --space-md: 16px;
+            --space-lg: 24px;
+            --space-xl: 40px;
+            --space-2xl: 64px;
+
+            /* Radius */
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 16px;
+            --radius-xl: 24px;
+            --radius-full: 999px;
+
+            /* Shadow */
+            --shadow-sm: 0 2px 8px rgba(0,0,0,0.3);
+            --shadow-md: 0 4px 20px rgba(0,0,0,0.4);
+            --shadow-lg: 0 8px 40px rgba(0,0,0,0.5);
+            --shadow-gold: 0 4px 20px rgba(201,168,76,0.15);
+            --shadow-glow: 0 0 30px rgba(201,168,76,0.1);
+
+            /* Transitions */
+            --ease-default: cubic-bezier(0.4, 0, 0.2, 1);
+            --duration-fast: 0.15s;
+            --duration-normal: 0.3s;
+            --duration-slow: 0.5s;
+
+            /* Legacy aliases for JS compatibility */
+            --danger: var(--red);
+            --warning: var(--orange);
+            --success: var(--green);
+            --accent: var(--gold);
+            --accent-glow: var(--gold-glow);
+            --feed-bg: var(--bg-tertiary);
+            --bg-card: var(--bg-elevated);
+            --bg-card-hover: var(--bg-hover);
+            --text-muted: var(--text-tertiary);
+            --live-red: var(--red);
         }
 
         [data-theme="light"] {
-            --bg-primary: #f1f5f9;
-            --bg-secondary: #ffffff;
-            --bg-card: #ffffff;
-            --bg-card-hover: #f8fafc;
-            --text-primary: #1e293b;
-            --text-secondary: #475569;
-            --text-muted: #94a3b8;
-            --accent: #2563eb;
-            --accent-glow: rgba(37, 99, 235, 0.15);
-            --border: #e2e8f0;
-            --feed-bg: #f8fafc;
+            --bg-primary: #f5f0e8;
+            --bg-secondary: #ede8dc;
+            --bg-tertiary: #e8e2d4;
+            --bg-elevated: rgba(0,0,0,0.03);
+            --bg-hover: rgba(0,0,0,0.05);
+
+            --gold: #b8962e;
+            --gold-light: #8a6e1a;
+            --gold-dim: rgba(184,150,46,0.12);
+            --gold-glow: rgba(184,150,46,0.25);
+            --gold-subtle: rgba(184,150,46,0.07);
+
+            --text-primary: #1a1a2e;
+            --text-secondary: #4a4a6a;
+            --text-tertiary: #8a8aaa;
+            --text-inverse: #f5f0e8;
+
+            --border: rgba(0,0,0,0.08);
+            --border-hover: rgba(0,0,0,0.16);
+            --border-gold: rgba(184,150,46,0.25);
+
+            --glass-bg: rgba(255,255,255,0.5);
+            --glass-border: rgba(0,0,0,0.08);
+
+            --red: #c0392b;
+            --red-dim: rgba(192,57,43,0.08);
+            --orange: #d68910;
+            --orange-dim: rgba(214,137,16,0.08);
+            --yellow: #b7950b;
+            --yellow-dim: rgba(183,149,11,0.08);
+            --green: #1e8449;
+            --green-dim: rgba(30,132,73,0.08);
+            --blue: #1a5276;
+            --blue-dim: rgba(26,82,118,0.08);
+            --indigo: #1f3a93;
+            --indigo-dim: rgba(31,58,147,0.08);
+            --purple: #6c3483;
+            --purple-dim: rgba(108,52,131,0.08);
+            --cyan: #148f77;
+            --cyan-dim: rgba(20,143,119,0.08);
+
+            --feed-bg: var(--bg-tertiary);
+            --bg-card: var(--bg-elevated);
+            --bg-card-hover: var(--bg-hover);
+            --text-muted: var(--text-tertiary);
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        /* ============================================================
+           Reset & Base
+        ============================================================ */
+        *, *::before, *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
         body {
-            font-family: 'Segoe UI', -apple-system, sans-serif;
+            font-family: 'Noto Sans KR', -apple-system, sans-serif;
+            font-weight: 400;
+            font-size: 15px;
+            line-height: 1.7;
             background: var(--bg-primary);
             color: var(--text-primary);
             min-height: 100vh;
             overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
         }
 
-        /* === 헤더 === */
+        /* ============================================================
+           Header
+        ============================================================ */
         .header {
-            background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-card) 100%);
-            border-bottom: 1px solid var(--border);
-            padding: 12px 24px;
+            background: rgba(6,6,11,0.85);
+            border-bottom: 1px solid var(--border-gold);
+            padding: 0 var(--space-lg);
+            height: 72px;
             display: flex;
             align-items: center;
-            justify-content: space-between;
+            justify-content: center;
             position: sticky;
             top: 0;
             z-index: 100;
-            backdrop-filter: blur(20px);
+            backdrop-filter: blur(var(--glass-blur));
+            -webkit-backdrop-filter: blur(var(--glass-blur));
+        }
+
+        /* Hero glow behind header */
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -40px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 600px;
+            height: 120px;
+            background: radial-gradient(ellipse at center, rgba(201,168,76,0.12) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        [data-theme="light"] .header {
+            background: rgba(245,240,232,0.9);
+        }
+
+        .header-inner {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+            max-width: 1600px;
+            position: relative;
         }
 
         .header-left {
             display: flex;
             align-items: center;
-            gap: 16px;
+            gap: var(--space-md);
+            flex: 1;
+        }
+
+        /* Centered title block */
+        .header-center {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
         }
 
         .logo {
-            font-size: 24px;
-            font-weight: 800;
-            background: linear-gradient(135deg, var(--accent) 0%, var(--purple) 100%);
+            font-family: 'Playfair Display', serif;
+            font-weight: 900;
+            font-size: 32px;
+            background: linear-gradient(135deg, var(--gold-light) 0%, var(--gold) 50%, var(--gold-light) 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: 0.02em;
+            line-height: 1;
+            filter: drop-shadow(0 0 12px var(--gold-glow));
+        }
+
+        .logo-subtitle {
+            font-family: 'Cormorant Garamond', serif;
+            font-style: italic;
+            font-size: 14px;
+            color: var(--text-secondary);
+            letter-spacing: 0.12em;
+            margin-top: 2px;
         }
 
         .live-badge {
             display: flex;
             align-items: center;
-            gap: 6px;
-            background: rgba(239, 68, 68, 0.15);
-            border: 1px solid rgba(239, 68, 68, 0.3);
+            gap: var(--space-xs);
+            background: var(--red-dim);
+            border: 1px solid rgba(231,76,60,0.35);
             padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 12px;
+            border-radius: var(--radius-full);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
             font-weight: 700;
-            color: var(--live-red);
+            color: var(--red);
+            letter-spacing: 0.08em;
         }
 
         .live-dot {
-            width: 8px;
-            height: 8px;
-            background: var(--live-red);
+            width: 7px;
+            height: 7px;
+            background: var(--red);
             border-radius: 50%;
+            box-shadow: 0 0 6px var(--red);
             animation: pulse 1.5s ease-in-out infinite;
         }
 
         @keyframes pulse {
-            0%, 100% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.5; transform: scale(0.8); }
+            0%, 100% { opacity: 1; transform: scale(1); box-shadow: 0 0 6px var(--red); }
+            50% { opacity: 0.6; transform: scale(0.8); box-shadow: 0 0 2px var(--red); }
         }
 
         .header-right {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: var(--space-md);
+            flex: 1;
+            justify-content: flex-end;
         }
 
         .status-text {
+            font-family: 'JetBrains Mono', monospace;
             font-size: 12px;
-            color: var(--text-muted);
+            color: var(--text-tertiary);
+            letter-spacing: 0.04em;
         }
 
         .theme-toggle {
-            background: var(--bg-card);
+            background: var(--glass-bg);
             border: 1px solid var(--border);
             color: var(--text-primary);
             padding: 6px 12px;
-            border-radius: 8px;
+            border-radius: var(--radius-sm);
             cursor: pointer;
-            font-size: 16px;
+            font-size: 15px;
+            transition: border-color var(--duration-fast) var(--ease-default),
+                        background var(--duration-fast) var(--ease-default);
+            backdrop-filter: blur(10px);
         }
 
-        /* === 메인 레이아웃 === */
+        .theme-toggle:hover {
+            border-color: var(--border-gold);
+            background: var(--gold-subtle);
+        }
+
+        /* ============================================================
+           Main Grid Layout
+        ============================================================ */
         .main-grid {
             display: grid;
             grid-template-columns: 340px 1fr;
             grid-template-rows: auto 1fr;
-            gap: 16px;
-            padding: 16px 24px;
+            gap: var(--space-md);
+            padding: var(--space-md) var(--space-lg);
             max-width: 1600px;
             margin: 0 auto;
-            min-height: calc(100vh - 60px);
+            min-height: calc(100vh - 72px);
         }
 
-        /* === 라이브 피드 (좌측) === */
+        /* ============================================================
+           Glassmorphism Base Card
+        ============================================================ */
+        .glass-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(var(--glass-blur));
+            -webkit-backdrop-filter: blur(var(--glass-blur));
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-lg);
+            transition: border-color var(--duration-normal) var(--ease-default),
+                        box-shadow var(--duration-normal) var(--ease-default);
+        }
+
+        .glass-card:hover {
+            border-color: var(--border-gold);
+            box-shadow: var(--shadow-gold), inset 0 1px 0 rgba(201,168,76,0.08);
+        }
+
+        /* ============================================================
+           Live Feed (Left)
+        ============================================================ */
         .live-feed {
             grid-row: 1 / -1;
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: 12px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(var(--glass-blur));
+            -webkit-backdrop-filter: blur(var(--glass-blur));
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-lg);
             display: flex;
             flex-direction: column;
-            max-height: calc(100vh - 92px);
+            max-height: calc(100vh - 100px);
             position: sticky;
-            top: 76px;
+            top: 84px;
+            transition: border-color var(--duration-normal) var(--ease-default);
+        }
+
+        .live-feed:hover {
+            border-color: var(--border-gold);
         }
 
         .feed-header {
-            padding: 16px;
+            padding: var(--space-md);
             border-bottom: 1px solid var(--border);
             display: flex;
             align-items: center;
@@ -158,18 +377,23 @@
         }
 
         .feed-header h3 {
-            font-size: 14px;
-            font-weight: 700;
+            font-family: 'Noto Sans KR', sans-serif;
+            font-size: 15px;
+            font-weight: 600;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: var(--space-sm);
+            color: var(--text-primary);
+            letter-spacing: 0.02em;
         }
 
         .feed-count {
-            background: var(--accent);
-            color: white;
-            padding: 2px 8px;
-            border-radius: 10px;
+            background: var(--gold-dim);
+            color: var(--gold);
+            border: 1px solid var(--border-gold);
+            padding: 1px 8px;
+            border-radius: var(--radius-full);
+            font-family: 'JetBrains Mono', monospace;
             font-size: 11px;
             font-weight: 700;
         }
@@ -177,36 +401,43 @@
         .feed-list {
             flex: 1;
             overflow-y: auto;
-            padding: 8px;
+            padding: var(--space-sm);
         }
 
-        .feed-list::-webkit-scrollbar { width: 4px; }
-        .feed-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+        .feed-list::-webkit-scrollbar { width: 3px; }
+        .feed-list::-webkit-scrollbar-track { background: transparent; }
+        .feed-list::-webkit-scrollbar-thumb { background: var(--border-gold); border-radius: 3px; }
 
         .feed-item {
             padding: 10px 12px;
-            border-radius: 8px;
+            border-radius: var(--radius-sm);
             margin-bottom: 4px;
-            background: var(--feed-bg);
+            background: var(--bg-elevated);
             border-left: 3px solid transparent;
-            transition: all 0.3s ease;
-            animation: slideIn 0.4s ease-out;
+            transition: background var(--duration-fast) var(--ease-default),
+                        border-left-color var(--duration-fast) var(--ease-default);
+            animation: slideIn 0.4s var(--ease-default) both;
         }
 
-        .feed-item:hover { background: var(--bg-card-hover); }
-        .feed-item.signal-high { border-left-color: var(--danger); }
-        .feed-item.signal-mid { border-left-color: var(--warning); }
-        .feed-item.signal-low { border-left-color: var(--success); }
-        .feed-item.signal-info { border-left-color: var(--accent); }
+        .feed-item:hover {
+            background: var(--bg-hover);
+        }
+
+        /* Rainbow signal levels */
+        .feed-item.signal-high  { border-left-color: var(--red); }
+        .feed-item.signal-mid   { border-left-color: var(--orange); }
+        .feed-item.signal-low   { border-left-color: var(--green); }
+        .feed-item.signal-info  { border-left-color: var(--blue); }
 
         @keyframes slideIn {
-            from { opacity: 0; transform: translateX(-20px); }
-            to { opacity: 1; transform: translateX(0); }
+            from { opacity: 0; transform: translateX(-16px); }
+            to   { opacity: 1; transform: translateX(0); }
         }
 
         .feed-time {
+            font-family: 'JetBrains Mono', monospace;
             font-size: 10px;
-            color: var(--text-muted);
+            color: var(--text-tertiary);
             margin-bottom: 4px;
             display: flex;
             align-items: center;
@@ -215,313 +446,435 @@
 
         .feed-channel {
             font-size: 10px;
-            background: var(--bg-card);
+            background: var(--gold-subtle);
+            border: 1px solid var(--border-gold);
             padding: 1px 6px;
-            border-radius: 4px;
-            color: var(--accent);
+            border-radius: var(--radius-sm);
+            color: var(--gold);
+            font-family: 'JetBrains Mono', monospace;
         }
 
         .feed-text {
-            font-size: 12px;
+            font-size: 13px;
+            font-weight: 400;
             color: var(--text-secondary);
-            line-height: 1.5;
+            line-height: 1.6;
         }
 
-        /* === 탭 내비게이션 === */
+        /* ============================================================
+           Tabs Bar
+        ============================================================ */
         .tabs-bar {
             display: flex;
-            gap: 4px;
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: 12px;
+            gap: var(--space-xs);
+            background: var(--glass-bg);
+            backdrop-filter: blur(var(--glass-blur));
+            -webkit-backdrop-filter: blur(var(--glass-blur));
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-lg);
             padding: 6px;
         }
 
         .tab-btn {
             flex: 1;
-            padding: 10px 12px;
-            border: none;
+            padding: 12px 14px;
+            border: 1px solid transparent;
             background: transparent;
-            color: var(--text-muted);
-            font-size: 12px;
-            font-weight: 600;
-            border-radius: 8px;
+            color: var(--text-tertiary);
+            font-family: 'Noto Sans KR', sans-serif;
+            font-size: 14px;
+            font-weight: 500;
+            border-radius: var(--radius-sm);
             cursor: pointer;
-            transition: all 0.2s;
+            transition: all var(--duration-fast) var(--ease-default);
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 6px;
+            gap: 5px;
             position: relative;
+            letter-spacing: 0.01em;
+            white-space: nowrap;
         }
 
-        .tab-btn:hover { color: var(--text-primary); background: var(--bg-card-hover); }
-        .tab-btn.active {
-            color: white;
-            background: var(--accent);
+        .tab-btn:hover {
+            color: var(--text-primary);
+            background: var(--bg-elevated);
+            border-color: var(--border);
         }
+
+        .tab-btn.active {
+            color: var(--gold);
+            background: var(--gold-dim);
+            border-color: var(--border-gold);
+            box-shadow: var(--shadow-gold);
+        }
+
+        /* Tab color accents */
+        .tab-btn[data-tab="signal"].active  { color: var(--gold);   background: var(--gold-dim);   border-color: var(--border-gold); }
+        .tab-btn[data-tab="narrative"].active { color: var(--orange); background: var(--orange-dim); border-color: rgba(243,156,18,0.3); }
+        .tab-btn[data-tab="correlation"].active { color: var(--blue);  background: var(--blue-dim);  border-color: rgba(52,152,219,0.3); }
+        .tab-btn[data-tab="risk"].active    { color: var(--red);    background: var(--red-dim);    border-color: rgba(231,76,60,0.3); }
+        .tab-btn[data-tab="scenario"].active { color: var(--purple); background: var(--purple-dim); border-color: rgba(139,92,246,0.3); }
 
         .tab-badge {
             width: 6px;
             height: 6px;
-            background: var(--danger);
+            background: var(--red);
             border-radius: 50%;
             position: absolute;
             top: 6px;
-            right: 8px;
+            right: 6px;
+            box-shadow: 0 0 4px var(--red);
         }
 
-        /* === 콘텐츠 영역 === */
+        /* ============================================================
+           Tab Content & Cards
+        ============================================================ */
         .tab-content {
             display: none;
-            gap: 16px;
+            gap: var(--space-md);
         }
+
         .tab-content.active {
             display: grid;
             grid-template-columns: 1fr 1fr;
         }
 
         .card {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 20px;
-            transition: all 0.3s;
+            background: var(--glass-bg);
+            backdrop-filter: blur(var(--glass-blur));
+            -webkit-backdrop-filter: blur(var(--glass-blur));
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-lg);
+            padding: var(--space-lg);
+            transition: border-color var(--duration-normal) var(--ease-default),
+                        box-shadow var(--duration-normal) var(--ease-default);
         }
 
         .card:hover {
-            border-color: var(--accent);
-            box-shadow: 0 0 20px var(--accent-glow);
+            border-color: var(--border-gold);
+            box-shadow: var(--shadow-gold);
         }
 
         .card-full { grid-column: 1 / -1; }
 
         .card h4 {
-            font-size: 14px;
-            font-weight: 700;
-            margin-bottom: 12px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        /* === 시그널 체인 비주얼 === */
-        .chain-flow {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 12px;
-            background: var(--feed-bg);
-            border-radius: 8px;
-            margin-bottom: 8px;
-            overflow-x: auto;
-        }
-
-        .chain-node {
-            padding: 6px 14px;
-            background: var(--accent);
-            color: white;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 600;
-            white-space: nowrap;
-            animation: nodeAppear 0.5s ease-out;
-        }
-
-        @keyframes nodeAppear {
-            from { opacity: 0; transform: scale(0.7); }
-            to { opacity: 1; transform: scale(1); }
-        }
-
-        .chain-arrow {
-            color: var(--warning);
+            font-family: 'Noto Sans KR', sans-serif;
             font-size: 16px;
-            font-weight: 700;
-            animation: arrowPulse 1s ease-in-out infinite;
-        }
-
-        @keyframes arrowPulse {
-            0%, 100% { opacity: 0.5; }
-            50% { opacity: 1; }
-        }
-
-        .confidence-bar {
-            height: 4px;
-            background: var(--border);
-            border-radius: 2px;
-            margin-top: 8px;
-            overflow: hidden;
-        }
-
-        .confidence-fill {
-            height: 100%;
-            border-radius: 2px;
-            transition: width 1s ease-out;
-        }
-
-        /* === 리스크 레이더 === */
-        .risk-meter {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin-bottom: 8px;
-        }
-
-        .risk-label {
-            font-size: 12px;
-            width: 80px;
-            color: var(--text-secondary);
-        }
-
-        .risk-bar-bg {
-            flex: 1;
-            height: 8px;
-            background: var(--border);
-            border-radius: 4px;
-            overflow: hidden;
-        }
-
-        .risk-bar-fill {
-            height: 100%;
-            border-radius: 4px;
-            transition: width 1.2s ease-out;
-        }
-
-        .risk-value {
-            font-size: 12px;
-            font-weight: 700;
-            width: 30px;
-            text-align: right;
-        }
-
-        /* === 시나리오 카드 === */
-        .scenario-card {
-            padding: 16px;
-            background: var(--feed-bg);
-            border-radius: 10px;
-            margin-bottom: 10px;
-            border-left: 4px solid var(--accent);
-        }
-
-        .scenario-card.bull { border-left-color: var(--success); }
-        .scenario-card.bear { border-left-color: var(--danger); }
-        .scenario-card.base { border-left-color: var(--warning); }
-        .scenario-card.black_swan { border-left-color: var(--purple); }
-
-        .scenario-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 8px;
-        }
-
-        .scenario-type {
-            font-size: 10px;
-            padding: 2px 8px;
-            border-radius: 4px;
-            font-weight: 700;
-        }
-
-        .scenario-type.bull { background: rgba(16, 185, 129, 0.15); color: var(--success); }
-        .scenario-type.bear { background: rgba(239, 68, 68, 0.15); color: var(--danger); }
-        .scenario-type.base { background: rgba(245, 158, 11, 0.15); color: var(--warning); }
-        .scenario-type.black_swan { background: rgba(139, 92, 246, 0.15); color: var(--purple); }
-
-        .scenario-prob {
-            font-size: 18px;
-            font-weight: 800;
-        }
-
-        .scenario-desc {
-            font-size: 12px;
-            color: var(--text-secondary);
-            line-height: 1.6;
-        }
-
-        /* === 내러티브 === */
-        .narrative-flow {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 12px;
-            background: var(--feed-bg);
-            border-radius: 8px;
-            margin-bottom: 8px;
-        }
-
-        .narrative-from {
-            padding: 8px 14px;
-            background: rgba(239, 68, 68, 0.15);
-            color: var(--danger);
-            border-radius: 8px;
-            font-size: 12px;
             font-weight: 600;
-            text-decoration: line-through;
-            opacity: 0.7;
+            margin-bottom: var(--space-lg);
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+            color: var(--text-primary);
+            letter-spacing: 0.03em;
         }
 
-        .narrative-arrow { font-size: 20px; color: var(--warning); }
-
-        .narrative-to {
-            padding: 8px 14px;
-            background: rgba(16, 185, 129, 0.15);
-            color: var(--success);
-            border-radius: 8px;
-            font-size: 12px;
-            font-weight: 700;
-        }
-
-        /* === 통계 바 === */
+        /* ============================================================
+           Stats Bar
+        ============================================================ */
         .stats-bar {
             display: flex;
-            gap: 16px;
-            padding: 12px 16px;
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: 10px;
+            gap: var(--space-lg);
+            padding: 14px var(--space-lg);
+            background: var(--glass-bg);
+            backdrop-filter: blur(var(--glass-blur));
+            -webkit-backdrop-filter: blur(var(--glass-blur));
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-lg);
             grid-column: 1 / -1;
+            transition: border-color var(--duration-normal) var(--ease-default);
+        }
+
+        .stats-bar:hover {
+            border-color: var(--border-gold);
         }
 
         .stat-item {
             display: flex;
             align-items: center;
-            gap: 8px;
-            font-size: 12px;
+            gap: var(--space-sm);
+            font-size: 14px;
             color: var(--text-secondary);
         }
 
         .stat-value {
-            font-weight: 800;
-            color: var(--text-primary);
-            font-size: 14px;
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 700;
+            color: var(--gold);
+            font-size: 17px;
+            transition: all 0.5s ease-out;
         }
 
         .stat-value.counting {
             transition: all 0.5s ease-out;
         }
 
-        /* === 로딩/No Data === */
+        /* ============================================================
+           Signal Chain
+        ============================================================ */
+        .chain-flow {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+            padding: 12px 14px;
+            background: var(--bg-elevated);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            margin-bottom: var(--space-sm);
+            overflow-x: auto;
+            transition: border-color var(--duration-fast) var(--ease-default);
+        }
+
+        .chain-flow:hover {
+            border-color: var(--border-gold);
+        }
+
+        .chain-node {
+            padding: 7px 16px;
+            background: var(--gold-dim);
+            color: var(--gold);
+            border: 1px solid var(--border-gold);
+            border-radius: var(--radius-full);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            font-weight: 500;
+            white-space: nowrap;
+            animation: nodeAppear 0.5s var(--ease-default) both;
+        }
+
+        @keyframes nodeAppear {
+            from { opacity: 0; transform: scale(0.75); }
+            to   { opacity: 1; transform: scale(1); }
+        }
+
+        .chain-arrow {
+            color: var(--gold);
+            font-size: 14px;
+            opacity: 0.5;
+            animation: arrowPulse 1.4s ease-in-out infinite;
+        }
+
+        @keyframes arrowPulse {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 0.8; }
+        }
+
+        .confidence-bar {
+            height: 3px;
+            background: var(--border);
+            border-radius: 2px;
+            margin-top: 6px;
+            overflow: hidden;
+        }
+
+        .confidence-fill {
+            height: 100%;
+            border-radius: 2px;
+            transition: width 1s var(--ease-default);
+        }
+
+        /* ============================================================
+           Risk Radar
+        ============================================================ */
+        .risk-meter {
+            display: flex;
+            align-items: center;
+            gap: var(--space-md);
+            margin-bottom: 10px;
+        }
+
+        .risk-label {
+            font-size: 14px;
+            width: 80px;
+            color: var(--text-secondary);
+            font-weight: 400;
+        }
+
+        .risk-bar-bg {
+            flex: 1;
+            height: 6px;
+            background: var(--border);
+            border-radius: var(--radius-full);
+            overflow: hidden;
+        }
+
+        .risk-bar-fill {
+            height: 100%;
+            border-radius: var(--radius-full);
+            transition: width 1.2s var(--ease-default);
+        }
+
+        .risk-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 15px;
+            font-weight: 700;
+            width: 28px;
+            text-align: right;
+        }
+
+        /* ============================================================
+           Scenario Cards
+        ============================================================ */
+        .scenario-card {
+            padding: var(--space-md);
+            background: var(--bg-elevated);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            margin-bottom: 10px;
+            border-left: 4px solid var(--border);
+            transition: border-color var(--duration-fast) var(--ease-default),
+                        box-shadow var(--duration-fast) var(--ease-default);
+        }
+
+        .scenario-card:hover {
+            box-shadow: var(--shadow-sm);
+        }
+
+        .scenario-card.bull       { border-left-color: var(--green);  }
+        .scenario-card.bear       { border-left-color: var(--red);    }
+        .scenario-card.base       { border-left-color: var(--orange); }
+        .scenario-card.black_swan { border-left-color: var(--purple); }
+
+        .scenario-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--space-sm);
+        }
+
+        .scenario-type {
+            font-size: 10px;
+            padding: 2px 9px;
+            border-radius: var(--radius-full);
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .scenario-type.bull       { background: var(--green-dim);  color: var(--green);  border: 1px solid rgba(67,233,123,0.25); }
+        .scenario-type.bear       { background: var(--red-dim);    color: var(--red);    border: 1px solid rgba(231,76,60,0.25); }
+        .scenario-type.base       { background: var(--orange-dim); color: var(--orange); border: 1px solid rgba(243,156,18,0.25); }
+        .scenario-type.black_swan { background: var(--purple-dim); color: var(--purple); border: 1px solid rgba(139,92,246,0.25); }
+
+        .scenario-prob {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--gold);
+        }
+
+        .scenario-desc {
+            font-size: 14px;
+            font-weight: 400;
+            color: var(--text-secondary);
+            line-height: 1.7;
+        }
+
+        /* ============================================================
+           Narrative Flow
+        ============================================================ */
+        .narrative-flow {
+            display: flex;
+            align-items: center;
+            gap: var(--space-md);
+            padding: 12px 14px;
+            background: var(--bg-elevated);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            margin-bottom: var(--space-sm);
+            transition: border-color var(--duration-fast) var(--ease-default);
+        }
+
+        .narrative-flow:hover {
+            border-color: var(--border-gold);
+        }
+
+        .narrative-from {
+            padding: 8px 14px;
+            background: var(--red-dim);
+            color: var(--red);
+            border: 1px solid rgba(231,76,60,0.2);
+            border-radius: var(--radius-sm);
+            font-size: 14px;
+            font-weight: 500;
+            text-decoration: line-through;
+            opacity: 0.75;
+        }
+
+        .narrative-arrow {
+            font-size: 18px;
+            color: var(--orange);
+        }
+
+        .narrative-to {
+            padding: 8px 14px;
+            background: var(--green-dim);
+            color: var(--green);
+            border: 1px solid rgba(67,233,123,0.2);
+            border-radius: var(--radius-sm);
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        /* ============================================================
+           Loading / No Data
+        ============================================================ */
         .loading-state, .no-data {
             text-align: center;
             padding: 60px 20px;
-            color: var(--text-muted);
+            color: var(--text-tertiary);
             grid-column: 1 / -1;
+            font-weight: 300;
         }
 
         .loading-spinner {
-            width: 40px;
-            height: 40px;
-            border: 3px solid var(--border);
-            border-top-color: var(--accent);
+            width: 36px;
+            height: 36px;
+            border: 2px solid var(--border);
+            border-top-color: var(--gold);
             border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 16px;
+            animation: spin 0.9s linear infinite;
+            margin: 0 auto 14px;
         }
 
         @keyframes spin { to { transform: rotate(360deg); } }
 
-        /* === 반응형 === */
-        @media (max-width: 1024px) {
+        /* ============================================================
+           Scrollbar
+        ============================================================ */
+        ::-webkit-scrollbar { width: 5px; height: 5px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--border-gold); border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--gold); }
+
+        /* ============================================================
+           Footer
+        ============================================================ */
+        .footer {
+            text-align: center;
+            padding: var(--space-xl) var(--space-lg) var(--space-lg);
+            border-top: 1px solid var(--border);
+            margin-top: var(--space-lg);
+        }
+
+        .footer-text {
+            font-family: 'Cormorant Garamond', serif;
+            font-style: italic;
+            font-size: 15px;
+            color: var(--text-tertiary);
+            letter-spacing: 0.08em;
+        }
+
+        .footer-text span {
+            color: var(--gold);
+            opacity: 0.8;
+        }
+
+        /* ============================================================
+           Responsive
+        ============================================================ */
+        @media (max-width: 1100px) {
             .main-grid {
                 grid-template-columns: 1fr;
                 padding: 12px;
@@ -534,42 +887,54 @@
             .tab-content.active {
                 grid-template-columns: 1fr;
             }
+            .header-center {
+                position: static;
+                transform: none;
+            }
         }
 
-        @media (max-width: 600px) {
+        @media (max-width: 640px) {
             .tabs-bar { flex-wrap: wrap; }
-            .tab-btn { font-size: 11px; padding: 8px; }
-            .header { padding: 10px 12px; }
-            .logo { font-size: 18px; }
+            .tab-btn { font-size: 11px; padding: 8px 6px; }
+            .header { height: auto; padding: 10px 14px; }
+            .logo { font-size: 20px; }
+            .stats-bar { flex-wrap: wrap; gap: var(--space-sm); }
+            .header-center { display: none; }
         }
-
-        /* === 스크롤바 === */
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
     </style>
 </head>
 <body>
 
-<!-- 헤더 -->
+<!-- ================================================================
+     Header
+================================================================ -->
 <header class="header">
-    <div class="header-left">
-        <span class="logo">🦅 EagleEye v2.0</span>
-        <div class="live-badge">
-            <span class="live-dot"></span>
-            LIVE
+    <div class="header-inner">
+        <div class="header-left">
+            <div class="live-badge">
+                <span class="live-dot"></span>
+                LIVE
+            </div>
         </div>
-    </div>
-    <div class="header-right">
-        <span class="status-text" id="lastUpdated">데이터 로딩 중...</span>
-        <button class="theme-toggle" onclick="toggleTheme()">☀️</button>
+
+        <div class="header-center">
+            <div class="logo">🦅 EagleEye v2.0</div>
+            <div class="logo-subtitle">Real-Time Market Intelligence · Powered by AI</div>
+        </div>
+
+        <div class="header-right">
+            <span class="status-text" id="lastUpdated">데이터 로딩 중...</span>
+            <button class="theme-toggle" onclick="toggleTheme()">☀️</button>
+        </div>
     </div>
 </header>
 
-<!-- 메인 -->
+<!-- ================================================================
+     Main Grid
+================================================================ -->
 <div class="main-grid">
 
-    <!-- 좌측: 라이브 피드 -->
+    <!-- Left: Live Feed -->
     <aside class="live-feed">
         <div class="feed-header">
             <h3>📡 실시간 시그널 피드 <span class="feed-count" id="feedCount">0</span></h3>
@@ -582,7 +947,7 @@
         </div>
     </aside>
 
-    <!-- 우측 상단: 탭 바 -->
+    <!-- Right Top: Tabs -->
     <nav class="tabs-bar">
         <button class="tab-btn active" data-tab="signal" onclick="switchTab('signal')">
             ⚡ 시그널체인
@@ -602,9 +967,7 @@
         </button>
     </nav>
 
-    <!-- 우측 하단: 탭 콘텐츠 -->
-
-    <!-- 시그널 체인 -->
+    <!-- Tab: Signal Chain (gold) -->
     <div class="tab-content active" id="tab-signal">
         <div class="stats-bar">
             <div class="stat-item">📊 활성 시그널 <span class="stat-value counting" id="stat-signals">-</span></div>
@@ -628,7 +991,7 @@
         </div>
     </div>
 
-    <!-- 내러티브 전이 -->
+    <!-- Tab: Narrative (orange/yellow) -->
     <div class="tab-content" id="tab-narrative">
         <div class="card card-full" id="narrative-shifts">
             <h4>🔄 내러티브 전이 감지</h4>
@@ -638,7 +1001,7 @@
         </div>
         <div class="card">
             <h4>🎯 지배적 내러티브</h4>
-            <div id="dominant-narrative" style="font-size:16px;font-weight:700;padding:20px;text-align:center;color:var(--accent);">-</div>
+            <div id="dominant-narrative" style="font-family:'Playfair Display',serif;font-size:17px;font-weight:700;padding:20px;text-align:center;color:var(--orange);">-</div>
         </div>
         <div class="card">
             <h4>🌱 떠오르는 내러티브</h4>
@@ -646,7 +1009,7 @@
         </div>
     </div>
 
-    <!-- 상관관계 -->
+    <!-- Tab: Correlation (blue/indigo) -->
     <div class="tab-content" id="tab-correlation">
         <div class="card card-full">
             <h4>🔗 자산 간 상관관계 매트릭스</h4>
@@ -658,7 +1021,7 @@
         </div>
     </div>
 
-    <!-- 리스크 레이더 -->
+    <!-- Tab: Risk (red) -->
     <div class="tab-content" id="tab-risk">
         <div class="card">
             <h4>🛡️ 리스크 레이더</h4>
@@ -674,7 +1037,7 @@
         </div>
     </div>
 
-    <!-- 시나리오 -->
+    <!-- Tab: Scenario (purple) -->
     <div class="tab-content" id="tab-scenario">
         <div class="card card-full" id="scenarios-container">
             <h4>🎯 시나리오 분석</h4>
@@ -693,6 +1056,15 @@
     </div>
 
 </div>
+
+<!-- ================================================================
+     Footer
+================================================================ -->
+<footer class="footer">
+    <p class="footer-text">
+        🦅 <span>EagleEye v2.0</span> &nbsp;·&nbsp; Powered by <span>RainbowMoon Design System</span> &nbsp;·&nbsp; <span>Point &amp; Line</span>
+    </p>
+</footer>
 
 <script>
 // === 테마 관리 ===
@@ -749,13 +1121,13 @@ const charts = {};
 function getChartColors() {
     const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
     return {
-        text: isDark ? '#94a3b8' : '#475569',
+        text: isDark ? '#888888' : '#4a4a6a',
         grid: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)',
     };
 }
 
 // === 데이터 로더 ===
-const DATA_BASE = '../data/';
+const DATA_BASE = '/data/';
 
 async function loadJSON(filename) {
     try {
@@ -807,7 +1179,7 @@ function renderSignalChains(data) {
 
         return `<div class="chain-flow">
             ${path.map(node => `<span class="chain-node">${escapeHtml(node)}</span><span class="chain-arrow">→</span>`).join('').slice(0, -39)}
-            <div style="margin-left:auto;font-size:11px;color:var(--text-muted)">
+            <div style="margin-left:auto;font-size:11px;color:var(--text-muted);font-family:'JetBrains Mono',monospace">
                 신뢰도 ${confPct}%
                 <div class="confidence-bar" style="width:80px">
                     <div class="confidence-fill" style="width:${confPct}%;background:${confColor}"></div>
@@ -837,7 +1209,7 @@ function renderSignalStrengthChart(chains) {
             datasets: [{
                 label: '신뢰도 (%)',
                 data: values,
-                backgroundColor: values.map(v => v > 70 ? 'rgba(16,185,129,0.7)' : v > 40 ? 'rgba(245,158,11,0.7)' : 'rgba(239,68,68,0.7)'),
+                backgroundColor: values.map(v => v > 70 ? 'rgba(67,233,123,0.7)' : v > 40 ? 'rgba(243,156,18,0.7)' : 'rgba(231,76,60,0.7)'),
                 borderRadius: 6,
             }]
         },
@@ -845,7 +1217,7 @@ function renderSignalStrengthChart(chains) {
             responsive: true,
             plugins: { legend: { display: false } },
             scales: {
-                y: { max: 100, ticks: { color: colors.text }, grid: { color: colors.grid } },
+                y: { max: 100, ticks: { color: colors.text, font: { family: 'JetBrains Mono' } }, grid: { color: colors.grid } },
                 x: { ticks: { color: colors.text }, grid: { display: false } },
             },
             animation: { duration: 1200, easing: 'easeOutQuart' },
@@ -867,7 +1239,7 @@ function renderNarrative(data) {
             <span class="narrative-from">${escapeHtml(s.from_narrative)}</span>
             <span class="narrative-arrow">→</span>
             <span class="narrative-to">${escapeHtml(s.to_narrative)}</span>
-            <span style="margin-left:auto;font-size:11px;color:var(--text-muted)">강도 ${strPct}%</span>
+            <span style="margin-left:auto;font-size:11px;color:var(--text-muted);font-family:'JetBrains Mono',monospace">강도 ${strPct}%</span>
         </div>`;
     }).join('');
 
@@ -878,7 +1250,7 @@ function renderNarrative(data) {
     const emergingEl = document.getElementById('emerging-narratives');
     if (data.emerging_narratives) {
         emergingEl.innerHTML = data.emerging_narratives.map(n =>
-            `<div style="padding:8px 12px;background:var(--feed-bg);border-radius:6px;margin-bottom:4px;font-size:13px;">🌱 ${escapeHtml(n)}</div>`
+            `<div style="padding:8px 12px;background:var(--orange-dim);border:1px solid rgba(243,156,18,0.2);border-radius:var(--radius-sm);margin-bottom:4px;font-size:13px;color:var(--orange);">🌱 ${escapeHtml(n)}</div>`
         ).join('');
     }
 }
@@ -887,7 +1259,6 @@ function renderNarrative(data) {
 function renderCorrelation(data) {
     if (!data || !data.correlations) return;
 
-    // 버블 차트로 상관관계 시각화
     const ctx = document.getElementById('chart-correlation');
     if (!ctx) return;
     const colors = getChartColors();
@@ -903,9 +1274,9 @@ function renderCorrelation(data) {
                 label: '상관 강도',
                 data: items.map(c => c.strength || 0),
                 backgroundColor: items.map(c =>
-                    c.direction === 'positive' ? 'rgba(16,185,129,0.7)' :
-                    c.direction === 'negative' ? 'rgba(239,68,68,0.7)' :
-                    'rgba(139,92,246,0.7)'
+                    c.direction === 'positive' ? 'rgba(67,233,123,0.7)' :
+                    c.direction === 'negative' ? 'rgba(231,76,60,0.7)' :
+                    'rgba(74,105,189,0.7)'
                 ),
                 borderRadius: 6,
             }]
@@ -915,18 +1286,17 @@ function renderCorrelation(data) {
             responsive: true,
             plugins: { legend: { display: false } },
             scales: {
-                x: { max: 1, ticks: { color: colors.text }, grid: { color: colors.grid } },
+                x: { max: 1, ticks: { color: colors.text, font: { family: 'JetBrains Mono' } }, grid: { color: colors.grid } },
                 y: { ticks: { color: colors.text, font: { size: 11 } }, grid: { display: false } },
             },
             animation: { duration: 1000 },
         }
     });
 
-    // 이상 징후
     const anomaliesEl = document.getElementById('anomalies-list');
     if (data.anomalies && data.anomalies.length > 0) {
         anomaliesEl.innerHTML = data.anomalies.map(a =>
-            `<div style="padding:10px;background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.3);border-radius:8px;margin-bottom:6px;font-size:13px;">⚠️ ${escapeHtml(a)}</div>`
+            `<div style="padding:10px;background:var(--orange-dim);border:1px solid rgba(243,156,18,0.25);border-radius:var(--radius-sm);margin-bottom:6px;font-size:13px;">⚠️ ${escapeHtml(a)}</div>`
         ).join('');
     } else {
         anomaliesEl.innerHTML = '<div style="padding:20px;text-align:center;color:var(--text-muted)">이상 징후 없음</div>';
@@ -942,7 +1312,6 @@ function renderRisk(data) {
     const keys = ['market', 'credit', 'liquidity', 'geopolitical', 'regulatory', 'systemic'];
     const values = keys.map(k => scores[k] || 0);
 
-    // 레이더 차트
     const ctx = document.getElementById('chart-risk-radar');
     if (ctx) {
         const colors = getChartColors();
@@ -955,8 +1324,8 @@ function renderRisk(data) {
                 datasets: [{
                     label: '리스크 점수',
                     data: values,
-                    backgroundColor: 'rgba(239, 68, 68, 0.15)',
-                    borderColor: 'rgba(239, 68, 68, 0.8)',
+                    backgroundColor: 'rgba(231,76,60,0.12)',
+                    borderColor: 'rgba(231,76,60,0.7)',
                     borderWidth: 2,
                     pointBackgroundColor: values.map(v => riskColor(v)),
                     pointRadius: 5,
@@ -978,7 +1347,6 @@ function renderRisk(data) {
         });
     }
 
-    // 바 차트
     const barsEl = document.getElementById('risk-bars');
     barsEl.innerHTML = labels.map((label, i) => {
         const val = values[i];
@@ -991,13 +1359,12 @@ function renderRisk(data) {
         </div>`;
     }).join('');
 
-    // 주요 리스크
     const risksEl = document.getElementById('top-risks-list');
     if (data.top_risks) {
         risksEl.innerHTML = data.top_risks.map(r =>
-            `<div style="padding:12px;background:var(--feed-bg);border-radius:8px;margin-bottom:6px;border-left:3px solid ${riskColor(r.severity)}">
-                <div style="font-size:13px;font-weight:600;margin-bottom:4px">${escapeHtml(r.risk)}</div>
-                <div style="font-size:11px;color:var(--text-muted)">심각도: ${r.severity}/10 | 확률: ${Math.round((r.probability || 0) * 100)}% | ${escapeHtml(r.category)}</div>
+            `<div style="padding:12px;background:var(--bg-elevated);border:1px solid var(--border);border-radius:var(--radius-sm);margin-bottom:6px;border-left:3px solid ${riskColor(r.severity)}">
+                <div style="font-family:'Noto Sans KR',sans-serif;font-size:13px;font-weight:500;margin-bottom:4px">${escapeHtml(r.risk)}</div>
+                <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-muted)">심각도: ${r.severity}/10 | 확률: ${Math.round((r.probability || 0) * 100)}% | ${escapeHtml(r.category)}</div>
             </div>`
         ).join('');
     }
@@ -1017,16 +1384,15 @@ function renderScenario(data) {
             <div class="scenario-header">
                 <div>
                     <span class="scenario-type ${s.type}">${typeLabel}</span>
-                    <strong style="margin-left:8px;font-size:14px">${escapeHtml(s.name)}</strong>
+                    <strong style="margin-left:8px;font-family:'Playfair Display',serif;font-size:14px">${escapeHtml(s.name)}</strong>
                 </div>
                 <span class="scenario-prob">${Math.round((s.probability || 0) * 100)}%</span>
             </div>
             <p class="scenario-desc">${escapeHtml(s.description)}</p>
-            ${s.timeline ? `<div style="margin-top:8px;font-size:11px;color:var(--text-muted)">⏱️ ${escapeHtml(s.timeline)}</div>` : ''}
+            ${s.timeline ? `<div style="margin-top:8px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-muted)">⏱️ ${escapeHtml(s.timeline)}</div>` : ''}
         </div>`;
     }).join('');
 
-    // 확률 차트
     const ctx = document.getElementById('chart-scenario-prob');
     if (ctx) {
         const clr = getChartColors();
@@ -1038,26 +1404,26 @@ function renderScenario(data) {
                 datasets: [{
                     data: data.scenarios.map(s => Math.round((s.probability || 0) * 100)),
                     backgroundColor: data.scenarios.map(s =>
-                        ({ bull: '#10b981', bear: '#ef4444', base: '#f59e0b', black_swan: '#8b5cf6' }[s.type] || '#3b82f6')
+                        ({ bull: '#43e97b', bear: '#e74c3c', base: '#f39c12', black_swan: '#8b5cf6' }[s.type] || '#c9a84c')
                     ),
                     borderWidth: 0,
+                    hoverOffset: 6,
                 }]
             },
             options: {
                 responsive: true,
                 plugins: {
-                    legend: { position: 'bottom', labels: { color: clr.text, font: { size: 11 } } },
+                    legend: { position: 'bottom', labels: { color: clr.text, font: { size: 11, family: 'JetBrains Mono' } } },
                 },
                 animation: { animateRotate: true, duration: 1200 },
             }
         });
     }
 
-    // 핵심 변수
     const varsEl = document.getElementById('key-variables');
     if (data.key_variables) {
         varsEl.innerHTML = data.key_variables.map(v =>
-            `<div style="padding:8px 12px;background:var(--feed-bg);border-radius:6px;margin-bottom:4px;font-size:13px">🔑 ${escapeHtml(v)}</div>`
+            `<div style="padding:8px 12px;background:var(--purple-dim);border:1px solid rgba(139,92,246,0.2);border-radius:var(--radius-sm);margin-bottom:4px;font-size:13px;color:var(--purple)">🔑 ${escapeHtml(v)}</div>`
         ).join('');
     }
 }
@@ -1074,20 +1440,17 @@ async function loadAllData() {
         loadJSON('scenario.json'),
     ]);
 
-    // 메타 정보
     if (meta) {
         document.getElementById('lastUpdated').textContent = `마지막 업데이트: ${timeAgo(meta.last_updated)}`;
         document.getElementById('stat-messages').textContent = (meta.total_messages || 0).toLocaleString();
     }
 
-    // 라이브 피드
     if (raw && raw.categories) {
         const allMsgs = Object.values(raw.categories).flat();
         renderFeed(allMsgs);
         document.getElementById('stat-channels').textContent = new Set(allMsgs.map(m => m.channel)).size;
     }
 
-    // 각 탭 렌더링
     if (signal && signal.data) renderSignalChains(signal.data);
     if (narrative && narrative.data) renderNarrative(narrative.data);
     if (correlation && correlation.data) renderCorrelation(correlation.data);

@@ -5,7 +5,12 @@ Telethon (MTProto) 기반으로 모든 구독 채널 메시지 수집
 
 import json
 import os
+import sys
 import asyncio
+
+# Windows cp949 인코딩 문제 해결
+if sys.platform == "win32":
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 from datetime import datetime, timedelta, timezone
 from telethon import TelegramClient
 from config import (

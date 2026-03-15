@@ -1,0 +1,7 @@
+{
+  "tool_name": "Bash",
+  "tool_input_preview": "{\"command\":\"type \\\"C:\\\\Users\\\\jun16\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\C--Users-jun16\\\\264a58f4-8749-44b0-8250-424270f14671\\\\tasks\\\\bx3zc0hyb.output\\\" 2>nul\",\"description\":\"Check analysis output (Windows ...",
+  "error": "Exit code 1",
+  "timestamp": "2026-03-15T09:28:16.102Z",
+  "retry_count": 1
+}

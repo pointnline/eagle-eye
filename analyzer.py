@@ -5,7 +5,11 @@
 
 import json
 import os
+import sys
 from datetime import datetime, timezone
+
+if sys.platform == "win32":
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 import google.generativeai as genai
 from config import GEMINI_API_KEY, ANALYSIS_MODEL, DEEP_MODEL, DATA_DIR
 
@@ -150,13 +154,22 @@ def load_messages() -> dict | None:
         return json.load(f)
 
 
+MAX_CHARS = 180_000  # Gemini 안정적 처리 범위
+
 def flatten_messages(data: dict) -> str:
-    """전체 메시지를 분석용 텍스트로 변환"""
+    """전체 메시지를 분석용 텍스트로 변환 (MAX_CHARS 이내로 제한)"""
     lines = []
     for category, msgs in data.get("categories", {}).items():
-        for m in msgs:
-            lines.append(f"[{m['channel']}] {m['date'][:10]} | {m['text'][:500]}")
-    return "\n".join(lines)
+        # 최신 메시지 우선, 채널당 최대 200자로 압축
+        sorted_msgs = sorted(msgs, key=lambda m: m["date"], reverse=True)
+        for m in sorted_msgs:
+            lines.append(f"[{category}/{m['channel']}] {m['date'][:10]} | {m['text'][:200]}")
+
+    result = "\n".join(lines)
+    if len(result) > MAX_CHARS:
+        result = result[:MAX_CHARS]
+        print(f"  ⚠️ 텍스트 {len('\n'.join(lines)):,}자 → {MAX_CHARS:,}자로 축소")
+    return result
 
 
 def analyze(analysis_type: str, messages_text: str, use_deep: bool = False) -> dict:
@@ -164,7 +177,7 @@ def analyze(analysis_type: str, messages_text: str, use_deep: bool = False) -> d
     model_name = DEEP_MODEL if use_deep else ANALYSIS_MODEL
     model = genai.GenerativeModel(model_name)
 
-    prompt = PROMPTS[analysis_type].format(messages=messages_text)
+    prompt = PROMPTS[analysis_type].replace("{messages}", messages_text)
 
     try:
         response = model.generate_content(prompt)

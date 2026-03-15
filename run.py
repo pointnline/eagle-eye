@@ -6,6 +6,9 @@
 import argparse
 import sys
 
+if sys.platform == "win32":
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+
 
 def main():
     parser = argparse.ArgumentParser(
@@ -58,13 +61,14 @@ def main():
         import functools
         import os
 
-        dashboard_dir = os.path.join(os.path.dirname(__file__), "dashboard")
+        # 프로젝트 루트에서 서빙 (dashboard/ + data/ 모두 접근 가능)
+        project_root = os.path.dirname(__file__)
         handler = functools.partial(
             http.server.SimpleHTTPRequestHandler,
-            directory=dashboard_dir,
+            directory=project_root,
         )
         server = http.server.HTTPServer(("localhost", args.port), handler)
-        print(f"🦅 EagleEye 대시보드: http://localhost:{args.port}")
+        print(f"🦅 EagleEye 대시보드: http://localhost:{args.port}/dashboard/")
         print("   종료: Ctrl+C")
         try:
             server.serve_forever()
