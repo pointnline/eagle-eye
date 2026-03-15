@@ -1,0 +1,22 @@
+# API Keys
+.env
+*.session
+*.session-journal
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Data (로컬 수집 데이터)
+data/*.json
+!data/.gitkeep
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/

@@ -1,0 +1,1116 @@
+<!DOCTYPE html>
+<html lang="ko" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🦅 EagleEye v2.0 — Live Intelligence Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js" crossorigin="anonymous"></script>
+    <style>
+        :root {
+            --bg-primary: #0a0e1a;
+            --bg-secondary: #111827;
+            --bg-card: #1a2035;
+            --bg-card-hover: #1e2a45;
+            --text-primary: #e2e8f0;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --accent: #3b82f6;
+            --accent-glow: rgba(59, 130, 246, 0.3);
+            --border: #1e293b;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --purple: #8b5cf6;
+            --live-red: #ef4444;
+            --feed-bg: #0f172a;
+        }
+
+        [data-theme="light"] {
+            --bg-primary: #f1f5f9;
+            --bg-secondary: #ffffff;
+            --bg-card: #ffffff;
+            --bg-card-hover: #f8fafc;
+            --text-primary: #1e293b;
+            --text-secondary: #475569;
+            --text-muted: #94a3b8;
+            --accent: #2563eb;
+            --accent-glow: rgba(37, 99, 235, 0.15);
+            --border: #e2e8f0;
+            --feed-bg: #f8fafc;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', -apple-system, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* === 헤더 === */
+        .header {
+            background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-card) 100%);
+            border-bottom: 1px solid var(--border);
+            padding: 12px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(20px);
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--accent) 0%, var(--purple) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .live-badge {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(239, 68, 68, 0.15);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--live-red);
+        }
+
+        .live-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--live-red);
+            border-radius: 50%;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(0.8); }
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .status-text {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .theme-toggle {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+            padding: 6px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        /* === 메인 레이아웃 === */
+        .main-grid {
+            display: grid;
+            grid-template-columns: 340px 1fr;
+            grid-template-rows: auto 1fr;
+            gap: 16px;
+            padding: 16px 24px;
+            max-width: 1600px;
+            margin: 0 auto;
+            min-height: calc(100vh - 60px);
+        }
+
+        /* === 라이브 피드 (좌측) === */
+        .live-feed {
+            grid-row: 1 / -1;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            max-height: calc(100vh - 92px);
+            position: sticky;
+            top: 76px;
+        }
+
+        .feed-header {
+            padding: 16px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .feed-header h3 {
+            font-size: 14px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .feed-count {
+            background: var(--accent);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        .feed-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 8px;
+        }
+
+        .feed-list::-webkit-scrollbar { width: 4px; }
+        .feed-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+        .feed-item {
+            padding: 10px 12px;
+            border-radius: 8px;
+            margin-bottom: 4px;
+            background: var(--feed-bg);
+            border-left: 3px solid transparent;
+            transition: all 0.3s ease;
+            animation: slideIn 0.4s ease-out;
+        }
+
+        .feed-item:hover { background: var(--bg-card-hover); }
+        .feed-item.signal-high { border-left-color: var(--danger); }
+        .feed-item.signal-mid { border-left-color: var(--warning); }
+        .feed-item.signal-low { border-left-color: var(--success); }
+        .feed-item.signal-info { border-left-color: var(--accent); }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .feed-time {
+            font-size: 10px;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .feed-channel {
+            font-size: 10px;
+            background: var(--bg-card);
+            padding: 1px 6px;
+            border-radius: 4px;
+            color: var(--accent);
+        }
+
+        .feed-text {
+            font-size: 12px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        /* === 탭 내비게이션 === */
+        .tabs-bar {
+            display: flex;
+            gap: 4px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 6px;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 10px 12px;
+            border: none;
+            background: transparent;
+            color: var(--text-muted);
+            font-size: 12px;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            position: relative;
+        }
+
+        .tab-btn:hover { color: var(--text-primary); background: var(--bg-card-hover); }
+        .tab-btn.active {
+            color: white;
+            background: var(--accent);
+        }
+
+        .tab-badge {
+            width: 6px;
+            height: 6px;
+            background: var(--danger);
+            border-radius: 50%;
+            position: absolute;
+            top: 6px;
+            right: 8px;
+        }
+
+        /* === 콘텐츠 영역 === */
+        .tab-content {
+            display: none;
+            gap: 16px;
+        }
+        .tab-content.active {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            transition: all 0.3s;
+        }
+
+        .card:hover {
+            border-color: var(--accent);
+            box-shadow: 0 0 20px var(--accent-glow);
+        }
+
+        .card-full { grid-column: 1 / -1; }
+
+        .card h4 {
+            font-size: 14px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* === 시그널 체인 비주얼 === */
+        .chain-flow {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px;
+            background: var(--feed-bg);
+            border-radius: 8px;
+            margin-bottom: 8px;
+            overflow-x: auto;
+        }
+
+        .chain-node {
+            padding: 6px 14px;
+            background: var(--accent);
+            color: white;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            white-space: nowrap;
+            animation: nodeAppear 0.5s ease-out;
+        }
+
+        @keyframes nodeAppear {
+            from { opacity: 0; transform: scale(0.7); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .chain-arrow {
+            color: var(--warning);
+            font-size: 16px;
+            font-weight: 700;
+            animation: arrowPulse 1s ease-in-out infinite;
+        }
+
+        @keyframes arrowPulse {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+
+        .confidence-bar {
+            height: 4px;
+            background: var(--border);
+            border-radius: 2px;
+            margin-top: 8px;
+            overflow: hidden;
+        }
+
+        .confidence-fill {
+            height: 100%;
+            border-radius: 2px;
+            transition: width 1s ease-out;
+        }
+
+        /* === 리스크 레이더 === */
+        .risk-meter {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 8px;
+        }
+
+        .risk-label {
+            font-size: 12px;
+            width: 80px;
+            color: var(--text-secondary);
+        }
+
+        .risk-bar-bg {
+            flex: 1;
+            height: 8px;
+            background: var(--border);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .risk-bar-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 1.2s ease-out;
+        }
+
+        .risk-value {
+            font-size: 12px;
+            font-weight: 700;
+            width: 30px;
+            text-align: right;
+        }
+
+        /* === 시나리오 카드 === */
+        .scenario-card {
+            padding: 16px;
+            background: var(--feed-bg);
+            border-radius: 10px;
+            margin-bottom: 10px;
+            border-left: 4px solid var(--accent);
+        }
+
+        .scenario-card.bull { border-left-color: var(--success); }
+        .scenario-card.bear { border-left-color: var(--danger); }
+        .scenario-card.base { border-left-color: var(--warning); }
+        .scenario-card.black_swan { border-left-color: var(--purple); }
+
+        .scenario-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .scenario-type {
+            font-size: 10px;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-weight: 700;
+        }
+
+        .scenario-type.bull { background: rgba(16, 185, 129, 0.15); color: var(--success); }
+        .scenario-type.bear { background: rgba(239, 68, 68, 0.15); color: var(--danger); }
+        .scenario-type.base { background: rgba(245, 158, 11, 0.15); color: var(--warning); }
+        .scenario-type.black_swan { background: rgba(139, 92, 246, 0.15); color: var(--purple); }
+
+        .scenario-prob {
+            font-size: 18px;
+            font-weight: 800;
+        }
+
+        .scenario-desc {
+            font-size: 12px;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        /* === 내러티브 === */
+        .narrative-flow {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            background: var(--feed-bg);
+            border-radius: 8px;
+            margin-bottom: 8px;
+        }
+
+        .narrative-from {
+            padding: 8px 14px;
+            background: rgba(239, 68, 68, 0.15);
+            color: var(--danger);
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            text-decoration: line-through;
+            opacity: 0.7;
+        }
+
+        .narrative-arrow { font-size: 20px; color: var(--warning); }
+
+        .narrative-to {
+            padding: 8px 14px;
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--success);
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        /* === 통계 바 === */
+        .stats-bar {
+            display: flex;
+            gap: 16px;
+            padding: 12px 16px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            grid-column: 1 / -1;
+        }
+
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .stat-value {
+            font-weight: 800;
+            color: var(--text-primary);
+            font-size: 14px;
+        }
+
+        .stat-value.counting {
+            transition: all 0.5s ease-out;
+        }
+
+        /* === 로딩/No Data === */
+        .loading-state, .no-data {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-muted);
+            grid-column: 1 / -1;
+        }
+
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--border);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 16px;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* === 반응형 === */
+        @media (max-width: 1024px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+                padding: 12px;
+            }
+            .live-feed {
+                grid-row: auto;
+                max-height: 300px;
+                position: static;
+            }
+            .tab-content.active {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .tabs-bar { flex-wrap: wrap; }
+            .tab-btn { font-size: 11px; padding: 8px; }
+            .header { padding: 10px 12px; }
+            .logo { font-size: 18px; }
+        }
+
+        /* === 스크롤바 === */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+    </style>
+</head>
+<body>
+
+<!-- 헤더 -->
+<header class="header">
+    <div class="header-left">
+        <span class="logo">🦅 EagleEye v2.0</span>
+        <div class="live-badge">
+            <span class="live-dot"></span>
+            LIVE
+        </div>
+    </div>
+    <div class="header-right">
+        <span class="status-text" id="lastUpdated">데이터 로딩 중...</span>
+        <button class="theme-toggle" onclick="toggleTheme()">☀️</button>
+    </div>
+</header>
+
+<!-- 메인 -->
+<div class="main-grid">
+
+    <!-- 좌측: 라이브 피드 -->
+    <aside class="live-feed">
+        <div class="feed-header">
+            <h3>📡 실시간 시그널 피드 <span class="feed-count" id="feedCount">0</span></h3>
+        </div>
+        <div class="feed-list" id="feedList">
+            <div class="loading-state">
+                <div class="loading-spinner"></div>
+                <p>시그널 수신 대기 중...</p>
+            </div>
+        </div>
+    </aside>
+
+    <!-- 우측 상단: 탭 바 -->
+    <nav class="tabs-bar">
+        <button class="tab-btn active" data-tab="signal" onclick="switchTab('signal')">
+            ⚡ 시그널체인
+            <span class="tab-badge" style="display:none"></span>
+        </button>
+        <button class="tab-btn" data-tab="narrative" onclick="switchTab('narrative')">
+            🔄 내러티브
+        </button>
+        <button class="tab-btn" data-tab="correlation" onclick="switchTab('correlation')">
+            🔗 상관관계
+        </button>
+        <button class="tab-btn" data-tab="risk" onclick="switchTab('risk')">
+            🛡️ 리스크
+        </button>
+        <button class="tab-btn" data-tab="scenario" onclick="switchTab('scenario')">
+            🎯 시나리오
+        </button>
+    </nav>
+
+    <!-- 우측 하단: 탭 콘텐츠 -->
+
+    <!-- 시그널 체인 -->
+    <div class="tab-content active" id="tab-signal">
+        <div class="stats-bar">
+            <div class="stat-item">📊 활성 시그널 <span class="stat-value counting" id="stat-signals">-</span></div>
+            <div class="stat-item">📨 분석 메시지 <span class="stat-value counting" id="stat-messages">-</span></div>
+            <div class="stat-item">📡 채널 <span class="stat-value" id="stat-channels">-</span></div>
+            <div class="stat-item">⏱️ 다음 분석 <span class="stat-value" id="stat-next">-</span></div>
+        </div>
+        <div class="card card-full" id="signal-chains">
+            <h4>⚡ 감지된 시그널 체인</h4>
+            <div id="signal-chains-list">
+                <div class="loading-state"><div class="loading-spinner"></div><p>시그널 분석 대기 중...</p></div>
+            </div>
+        </div>
+        <div class="card">
+            <h4>📈 시그널 강도 분포</h4>
+            <canvas id="chart-signal-strength" height="200"></canvas>
+        </div>
+        <div class="card">
+            <h4>🕐 시간대별 시그널 빈도</h4>
+            <canvas id="chart-signal-timeline" height="200"></canvas>
+        </div>
+    </div>
+
+    <!-- 내러티브 전이 -->
+    <div class="tab-content" id="tab-narrative">
+        <div class="card card-full" id="narrative-shifts">
+            <h4>🔄 내러티브 전이 감지</h4>
+            <div id="narrative-shifts-list">
+                <div class="loading-state"><div class="loading-spinner"></div><p>내러티브 분석 대기 중...</p></div>
+            </div>
+        </div>
+        <div class="card">
+            <h4>🎯 지배적 내러티브</h4>
+            <div id="dominant-narrative" style="font-size:16px;font-weight:700;padding:20px;text-align:center;color:var(--accent);">-</div>
+        </div>
+        <div class="card">
+            <h4>🌱 떠오르는 내러티브</h4>
+            <div id="emerging-narratives"></div>
+        </div>
+    </div>
+
+    <!-- 상관관계 -->
+    <div class="tab-content" id="tab-correlation">
+        <div class="card card-full">
+            <h4>🔗 자산 간 상관관계 매트릭스</h4>
+            <canvas id="chart-correlation" height="300"></canvas>
+        </div>
+        <div class="card card-full" id="correlation-anomalies">
+            <h4>⚠️ 상관관계 이상 징후</h4>
+            <div id="anomalies-list"></div>
+        </div>
+    </div>
+
+    <!-- 리스크 레이더 -->
+    <div class="tab-content" id="tab-risk">
+        <div class="card">
+            <h4>🛡️ 리스크 레이더</h4>
+            <canvas id="chart-risk-radar" height="280"></canvas>
+        </div>
+        <div class="card">
+            <h4>📊 리스크 점수 상세</h4>
+            <div id="risk-bars"></div>
+        </div>
+        <div class="card card-full" id="risk-details">
+            <h4>🔴 주요 리스크 요인</h4>
+            <div id="top-risks-list"></div>
+        </div>
+    </div>
+
+    <!-- 시나리오 -->
+    <div class="tab-content" id="tab-scenario">
+        <div class="card card-full" id="scenarios-container">
+            <h4>🎯 시나리오 분석</h4>
+            <div id="scenarios-list">
+                <div class="loading-state"><div class="loading-spinner"></div><p>시나리오 생성 중...</p></div>
+            </div>
+        </div>
+        <div class="card">
+            <h4>📊 시나리오 확률 분포</h4>
+            <canvas id="chart-scenario-prob" height="200"></canvas>
+        </div>
+        <div class="card">
+            <h4>🔑 핵심 변수</h4>
+            <div id="key-variables"></div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+// === 테마 관리 ===
+(function() {
+    const saved = localStorage.getItem('eagleeye-theme');
+    const prefer = window.matchMedia('(prefers-color-scheme: light)').matches;
+    if (saved === 'light' || (!saved && prefer)) {
+        document.documentElement.setAttribute('data-theme', 'light');
+    }
+})();
+
+function toggleTheme() {
+    const html = document.documentElement;
+    const next = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    html.setAttribute('data-theme', next);
+    localStorage.setItem('eagleeye-theme', next);
+    document.querySelector('.theme-toggle').textContent = next === 'dark' ? '☀️' : '🌙';
+}
+
+// === 유틸리티 ===
+function escapeHtml(str) {
+    const d = document.createElement('div');
+    d.textContent = str;
+    return d.innerHTML;
+}
+
+function timeAgo(isoStr) {
+    const diff = Date.now() - new Date(isoStr).getTime();
+    const m = Math.floor(diff / 60000);
+    if (m < 1) return '방금';
+    if (m < 60) return m + '분 전';
+    const h = Math.floor(m / 60);
+    if (h < 24) return h + '시간 전';
+    return Math.floor(h / 24) + '일 전';
+}
+
+function riskColor(score) {
+    if (score >= 7) return 'var(--danger)';
+    if (score >= 4) return 'var(--warning)';
+    return 'var(--success)';
+}
+
+// === 탭 전환 ===
+function switchTab(tabId) {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    document.querySelector(`[data-tab="${tabId}"]`).classList.add('active');
+    document.getElementById(`tab-${tabId}`).classList.add('active');
+}
+
+// === 차트 인스턴스 관리 ===
+const charts = {};
+
+function getChartColors() {
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    return {
+        text: isDark ? '#94a3b8' : '#475569',
+        grid: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)',
+    };
+}
+
+// === 데이터 로더 ===
+const DATA_BASE = '../data/';
+
+async function loadJSON(filename) {
+    try {
+        const res = await fetch(DATA_BASE + filename + '?t=' + Date.now());
+        if (!res.ok) return null;
+        return await res.json();
+    } catch { return null; }
+}
+
+// === 라이브 피드 렌더링 ===
+function renderFeed(messages) {
+    const list = document.getElementById('feedList');
+    if (!messages || messages.length === 0) {
+        list.innerHTML = '<div class="no-data">수집된 메시지가 없습니다.<br>python run.py pipeline 을 실행하세요.</div>';
+        return;
+    }
+
+    const sorted = messages.slice().sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 100);
+    document.getElementById('feedCount').textContent = sorted.length;
+
+    list.innerHTML = sorted.map((m, i) => {
+        const level = m.views > 5000 ? 'high' : m.views > 1000 ? 'mid' : m.views > 200 ? 'low' : 'info';
+        const delay = Math.min(i * 0.05, 2);
+        return `<div class="feed-item signal-${level}" style="animation-delay:${delay}s">
+            <div class="feed-time">
+                ${escapeHtml(timeAgo(m.date))}
+                <span class="feed-channel">${escapeHtml(m.channel)}</span>
+                ${m.views ? `<span>👁 ${m.views.toLocaleString()}</span>` : ''}
+            </div>
+            <div class="feed-text">${escapeHtml(m.text.substring(0, 120))}${m.text.length > 120 ? '...' : ''}</div>
+        </div>`;
+    }).join('');
+}
+
+// === 시그널 체인 렌더링 ===
+function renderSignalChains(data) {
+    const container = document.getElementById('signal-chains-list');
+    if (!data || !data.chains || data.chains.length === 0) {
+        container.innerHTML = '<div class="no-data">시그널 체인 데이터 없음</div>';
+        return;
+    }
+
+    document.getElementById('stat-signals').textContent = data.chains.length;
+
+    container.innerHTML = data.chains.map(c => {
+        const path = Array.isArray(c.path) ? c.path.join(' → ').split(' → ') : [c.trigger];
+        const confPct = Math.round((c.confidence || 0) * 100);
+        const confColor = confPct > 70 ? 'var(--success)' : confPct > 40 ? 'var(--warning)' : 'var(--danger)';
+
+        return `<div class="chain-flow">
+            ${path.map(node => `<span class="chain-node">${escapeHtml(node)}</span><span class="chain-arrow">→</span>`).join('').slice(0, -39)}
+            <div style="margin-left:auto;font-size:11px;color:var(--text-muted)">
+                신뢰도 ${confPct}%
+                <div class="confidence-bar" style="width:80px">
+                    <div class="confidence-fill" style="width:${confPct}%;background:${confColor}"></div>
+                </div>
+            </div>
+        </div>`;
+    }).join('');
+
+    // 시그널 강도 차트
+    renderSignalStrengthChart(data.chains);
+}
+
+function renderSignalStrengthChart(chains) {
+    const ctx = document.getElementById('chart-signal-strength');
+    if (!ctx) return;
+    const colors = getChartColors();
+
+    if (charts['signalStrength']) charts['signalStrength'].destroy();
+
+    const labels = chains.slice(0, 8).map((c, i) => `체인 ${i + 1}`);
+    const values = chains.slice(0, 8).map(c => Math.round((c.confidence || 0) * 100));
+
+    charts['signalStrength'] = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels,
+            datasets: [{
+                label: '신뢰도 (%)',
+                data: values,
+                backgroundColor: values.map(v => v > 70 ? 'rgba(16,185,129,0.7)' : v > 40 ? 'rgba(245,158,11,0.7)' : 'rgba(239,68,68,0.7)'),
+                borderRadius: 6,
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { display: false } },
+            scales: {
+                y: { max: 100, ticks: { color: colors.text }, grid: { color: colors.grid } },
+                x: { ticks: { color: colors.text }, grid: { display: false } },
+            },
+            animation: { duration: 1200, easing: 'easeOutQuart' },
+        }
+    });
+}
+
+// === 내러티브 렌더링 ===
+function renderNarrative(data) {
+    const container = document.getElementById('narrative-shifts-list');
+    if (!data || !data.shifts) {
+        container.innerHTML = '<div class="no-data">내러티브 데이터 없음</div>';
+        return;
+    }
+
+    container.innerHTML = data.shifts.map(s => {
+        const strPct = Math.round((s.strength || 0) * 100);
+        return `<div class="narrative-flow">
+            <span class="narrative-from">${escapeHtml(s.from_narrative)}</span>
+            <span class="narrative-arrow">→</span>
+            <span class="narrative-to">${escapeHtml(s.to_narrative)}</span>
+            <span style="margin-left:auto;font-size:11px;color:var(--text-muted)">강도 ${strPct}%</span>
+        </div>`;
+    }).join('');
+
+    if (data.dominant_narrative) {
+        document.getElementById('dominant-narrative').textContent = data.dominant_narrative;
+    }
+
+    const emergingEl = document.getElementById('emerging-narratives');
+    if (data.emerging_narratives) {
+        emergingEl.innerHTML = data.emerging_narratives.map(n =>
+            `<div style="padding:8px 12px;background:var(--feed-bg);border-radius:6px;margin-bottom:4px;font-size:13px;">🌱 ${escapeHtml(n)}</div>`
+        ).join('');
+    }
+}
+
+// === 상관관계 렌더링 ===
+function renderCorrelation(data) {
+    if (!data || !data.correlations) return;
+
+    // 버블 차트로 상관관계 시각화
+    const ctx = document.getElementById('chart-correlation');
+    if (!ctx) return;
+    const colors = getChartColors();
+
+    if (charts['correlation']) charts['correlation'].destroy();
+
+    const items = data.correlations.slice(0, 10);
+    charts['correlation'] = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: items.map(c => `${c.asset_a} ↔ ${c.asset_b}`),
+            datasets: [{
+                label: '상관 강도',
+                data: items.map(c => c.strength || 0),
+                backgroundColor: items.map(c =>
+                    c.direction === 'positive' ? 'rgba(16,185,129,0.7)' :
+                    c.direction === 'negative' ? 'rgba(239,68,68,0.7)' :
+                    'rgba(139,92,246,0.7)'
+                ),
+                borderRadius: 6,
+            }]
+        },
+        options: {
+            indexAxis: 'y',
+            responsive: true,
+            plugins: { legend: { display: false } },
+            scales: {
+                x: { max: 1, ticks: { color: colors.text }, grid: { color: colors.grid } },
+                y: { ticks: { color: colors.text, font: { size: 11 } }, grid: { display: false } },
+            },
+            animation: { duration: 1000 },
+        }
+    });
+
+    // 이상 징후
+    const anomaliesEl = document.getElementById('anomalies-list');
+    if (data.anomalies && data.anomalies.length > 0) {
+        anomaliesEl.innerHTML = data.anomalies.map(a =>
+            `<div style="padding:10px;background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.3);border-radius:8px;margin-bottom:6px;font-size:13px;">⚠️ ${escapeHtml(a)}</div>`
+        ).join('');
+    } else {
+        anomaliesEl.innerHTML = '<div style="padding:20px;text-align:center;color:var(--text-muted)">이상 징후 없음</div>';
+    }
+}
+
+// === 리스크 레이더 렌더링 ===
+function renderRisk(data) {
+    if (!data || !data.risk_scores) return;
+
+    const scores = data.risk_scores;
+    const labels = ['시장', '신용', '유동성', '지정학', '규제', '시스템'];
+    const keys = ['market', 'credit', 'liquidity', 'geopolitical', 'regulatory', 'systemic'];
+    const values = keys.map(k => scores[k] || 0);
+
+    // 레이더 차트
+    const ctx = document.getElementById('chart-risk-radar');
+    if (ctx) {
+        const colors = getChartColors();
+        if (charts['riskRadar']) charts['riskRadar'].destroy();
+
+        charts['riskRadar'] = new Chart(ctx, {
+            type: 'radar',
+            data: {
+                labels,
+                datasets: [{
+                    label: '리스크 점수',
+                    data: values,
+                    backgroundColor: 'rgba(239, 68, 68, 0.15)',
+                    borderColor: 'rgba(239, 68, 68, 0.8)',
+                    borderWidth: 2,
+                    pointBackgroundColor: values.map(v => riskColor(v)),
+                    pointRadius: 5,
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { display: false } },
+                scales: {
+                    r: {
+                        max: 10, min: 0,
+                        ticks: { display: false },
+                        grid: { color: colors.grid },
+                        pointLabels: { color: colors.text, font: { size: 12 } },
+                    }
+                },
+                animation: { duration: 1500, easing: 'easeOutElastic' },
+            }
+        });
+    }
+
+    // 바 차트
+    const barsEl = document.getElementById('risk-bars');
+    barsEl.innerHTML = labels.map((label, i) => {
+        const val = values[i];
+        return `<div class="risk-meter">
+            <span class="risk-label">${label}</span>
+            <div class="risk-bar-bg">
+                <div class="risk-bar-fill" style="width:${val * 10}%;background:${riskColor(val)}"></div>
+            </div>
+            <span class="risk-value" style="color:${riskColor(val)}">${val}</span>
+        </div>`;
+    }).join('');
+
+    // 주요 리스크
+    const risksEl = document.getElementById('top-risks-list');
+    if (data.top_risks) {
+        risksEl.innerHTML = data.top_risks.map(r =>
+            `<div style="padding:12px;background:var(--feed-bg);border-radius:8px;margin-bottom:6px;border-left:3px solid ${riskColor(r.severity)}">
+                <div style="font-size:13px;font-weight:600;margin-bottom:4px">${escapeHtml(r.risk)}</div>
+                <div style="font-size:11px;color:var(--text-muted)">심각도: ${r.severity}/10 | 확률: ${Math.round((r.probability || 0) * 100)}% | ${escapeHtml(r.category)}</div>
+            </div>`
+        ).join('');
+    }
+}
+
+// === 시나리오 렌더링 ===
+function renderScenario(data) {
+    const container = document.getElementById('scenarios-list');
+    if (!data || !data.scenarios) {
+        container.innerHTML = '<div class="no-data">시나리오 데이터 없음</div>';
+        return;
+    }
+
+    container.innerHTML = data.scenarios.map(s => {
+        const typeLabel = { bull: '🟢 강세', bear: '🔴 약세', base: '🟡 기본', black_swan: '🟣 블랙스완' }[s.type] || s.type;
+        return `<div class="scenario-card ${s.type}">
+            <div class="scenario-header">
+                <div>
+                    <span class="scenario-type ${s.type}">${typeLabel}</span>
+                    <strong style="margin-left:8px;font-size:14px">${escapeHtml(s.name)}</strong>
+                </div>
+                <span class="scenario-prob">${Math.round((s.probability || 0) * 100)}%</span>
+            </div>
+            <p class="scenario-desc">${escapeHtml(s.description)}</p>
+            ${s.timeline ? `<div style="margin-top:8px;font-size:11px;color:var(--text-muted)">⏱️ ${escapeHtml(s.timeline)}</div>` : ''}
+        </div>`;
+    }).join('');
+
+    // 확률 차트
+    const ctx = document.getElementById('chart-scenario-prob');
+    if (ctx) {
+        const clr = getChartColors();
+        if (charts['scenarioProb']) charts['scenarioProb'].destroy();
+        charts['scenarioProb'] = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: data.scenarios.map(s => s.name),
+                datasets: [{
+                    data: data.scenarios.map(s => Math.round((s.probability || 0) * 100)),
+                    backgroundColor: data.scenarios.map(s =>
+                        ({ bull: '#10b981', bear: '#ef4444', base: '#f59e0b', black_swan: '#8b5cf6' }[s.type] || '#3b82f6')
+                    ),
+                    borderWidth: 0,
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { position: 'bottom', labels: { color: clr.text, font: { size: 11 } } },
+                },
+                animation: { animateRotate: true, duration: 1200 },
+            }
+        });
+    }
+
+    // 핵심 변수
+    const varsEl = document.getElementById('key-variables');
+    if (data.key_variables) {
+        varsEl.innerHTML = data.key_variables.map(v =>
+            `<div style="padding:8px 12px;background:var(--feed-bg);border-radius:6px;margin-bottom:4px;font-size:13px">🔑 ${escapeHtml(v)}</div>`
+        ).join('');
+    }
+}
+
+// === 메인 데이터 로드 ===
+async function loadAllData() {
+    const [meta, raw, signal, narrative, correlation, risk, scenario] = await Promise.all([
+        loadJSON('meta.json'),
+        loadJSON('raw_messages.json'),
+        loadJSON('signal_chain.json'),
+        loadJSON('narrative_shift.json'),
+        loadJSON('correlation.json'),
+        loadJSON('risk_radar.json'),
+        loadJSON('scenario.json'),
+    ]);
+
+    // 메타 정보
+    if (meta) {
+        document.getElementById('lastUpdated').textContent = `마지막 업데이트: ${timeAgo(meta.last_updated)}`;
+        document.getElementById('stat-messages').textContent = (meta.total_messages || 0).toLocaleString();
+    }
+
+    // 라이브 피드
+    if (raw && raw.categories) {
+        const allMsgs = Object.values(raw.categories).flat();
+        renderFeed(allMsgs);
+        document.getElementById('stat-channels').textContent = new Set(allMsgs.map(m => m.channel)).size;
+    }
+
+    // 각 탭 렌더링
+    if (signal && signal.data) renderSignalChains(signal.data);
+    if (narrative && narrative.data) renderNarrative(narrative.data);
+    if (correlation && correlation.data) renderCorrelation(correlation.data);
+    if (risk && risk.data) renderRisk(risk.data);
+    if (scenario && scenario.data) renderScenario(scenario.data);
+}
+
+// === 초기화 및 자동 갱신 ===
+loadAllData();
+
+// 5분마다 자동 갱신
+setInterval(loadAllData, 300000);
+
+// 테마 변경 시 차트 색상 업데이트
+const observer = new MutationObserver(() => {
+    Object.values(charts).forEach(c => {
+        if (c && c.options) {
+            c.update();
+        }
+    });
+});
+observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,16 @@
+# 🦅 EagleEye v2.0 Dependencies
+
+# Telegram 채널 메시지 수집 (MTProto - 모든 채널 읽기 가능)
+telethon==1.36.0
+
+# Gemini API (분석 엔진)
+google-generativeai==0.8.5
+
+# 환경변수
+python-dotenv==1.1.0
+
+# 스케줄링
+schedule==1.2.2
+
+# 데이터 처리
+pandas==2.2.3
